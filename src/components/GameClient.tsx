@@ -537,6 +537,38 @@ export default function GameClient() {
             </div>
             <span className="text-lg">›</span>
           </div>
+
+          {/* 인기 랭킹 (플레이스홀더) */}
+          <div className="mt-4 p-4 bg-white rounded-2xl border border-[--color-border] shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-sm font-extrabold">🔥 실시간 인기 치킨</div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#FFF3E0] text-[#E65100]">LIVE</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              {[
+                { rank: 1, name: "삐삐큐", menu: "황끔올리뷔", pct: 18 },
+                { rank: 2, name: "삐에이취씨", menu: "뿌릉클", pct: 15 },
+                { rank: 3, name: "꾜촌", menu: "허늬콤보", pct: 14 },
+              ].map((item) => (
+                <div key={item.rank} className="flex items-center gap-2">
+                  <span className="text-sm font-extrabold w-5 text-center" style={{ color: item.rank === 1 ? "#FF6B35" : "#999" }}>
+                    {item.rank}
+                  </span>
+                  <div className="flex-1 h-6 bg-[#f5f5f5] rounded-full overflow-hidden relative">
+                    <div
+                      className="h-full rounded-full"
+                      style={{ width: `${item.pct * 4}%`, background: "linear-gradient(90deg, #FFB300, #FF8F00)" }}
+                    />
+                    <span className="absolute inset-0 flex items-center px-3 text-xs font-bold">
+                      {item.name} {item.menu}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-[--color-text-muted] w-8 text-right">{item.pct}%</span>
+                </div>
+              ))}
+            </div>
+            <div className="text-[10px] text-[--color-text-muted] text-center mt-2">토스 앱에서 전체 랭킹 보기</div>
+          </div>
         </>
       )}
 
