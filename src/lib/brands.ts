@@ -9,7 +9,7 @@ export const BRANDS: Brand[] = [
     color: "#8B4513",
     chickenColor: "#D4A017",
     description: "바삭한 황금빛 올리브 치킨",
-    emoji: "🫒",
+    emoji: "🍗",
   },
   {
     id: "bhc",
@@ -19,7 +19,7 @@ export const BRANDS: Brand[] = [
     color: "#FF69B4",
     chickenColor: "#FFB6C1",
     description: "달콤한 핑크빛 크리스피",
-    emoji: "🌸",
+    emoji: "🍖",
   },
   {
     id: "kyochon",
@@ -29,7 +29,7 @@ export const BRANDS: Brand[] = [
     color: "#C8102E",
     chickenColor: "#E8A87C",
     description: "꿀처럼 달콤한 간장 치킨",
-    emoji: "🍯",
+    emoji: "🐔",
   },
   {
     id: "goobne",
@@ -39,7 +39,7 @@ export const BRANDS: Brand[] = [
     color: "#FF4500",
     chickenColor: "#FF6347",
     description: "매콤하게 구운 바삭 치킨",
-    emoji: "🌶️",
+    emoji: "🐓",
   },
   {
     id: "nene",
@@ -48,8 +48,8 @@ export const BRANDS: Brand[] = [
     menu: "쀼링클",
     color: "#9370DB",
     chickenColor: "#DDA0DD",
-    description: "보라빛 시즈닝 파우더 치킨",
-    emoji: "✨",
+    description: "시즈닝 파우더 치킨",
+    emoji: "🐤",
   },
   {
     id: "pelicana",
@@ -59,7 +59,7 @@ export const BRANDS: Brand[] = [
     color: "#FF8C00",
     chickenColor: "#FFA500",
     description: "양념과 후라이드의 클래식 조합",
-    emoji: "🔥",
+    emoji: "🐥",
   },
   {
     id: "puradak",
@@ -69,7 +69,7 @@ export const BRANDS: Brand[] = [
     color: "#2F4F4F",
     chickenColor: "#696969",
     description: "블랙 마늘의 깊은 풍미",
-    emoji: "🧄",
+    emoji: "🥩",
   },
   {
     id: "hosigi",
@@ -79,7 +79,7 @@ export const BRANDS: Brand[] = [
     color: "#228B22",
     chickenColor: "#90EE90",
     description: "두 마리라 더 행복한 치킨",
-    emoji: "🐔",
+    emoji: "🐣",
   },
   {
     id: "mexicana",
@@ -89,7 +89,7 @@ export const BRANDS: Brand[] = [
     color: "#DAA520",
     chickenColor: "#F0E68C",
     description: "정통 후라이드의 정석",
-    emoji: "🍳",
+    emoji: "🦃",
   },
   {
     id: "cheogajip",
@@ -99,7 +99,7 @@ export const BRANDS: Brand[] = [
     color: "#DC143C",
     chickenColor: "#FF6B6B",
     description: "새빨간 양념의 원조",
-    emoji: "🫕",
+    emoji: "🥚",
   },
   {
     id: "genesis",
@@ -109,7 +109,7 @@ export const BRANDS: Brand[] = [
     color: "#4169E1",
     chickenColor: "#87CEEB",
     description: "크리스피의 새로운 시작",
-    emoji: "💎",
+    emoji: "🪺",
   },
   {
     id: "norangtongdak",
@@ -119,7 +119,7 @@ export const BRANDS: Brand[] = [
     color: "#FFD700",
     chickenColor: "#FFEC8B",
     description: "노란 빛깔 통째로 한마리",
-    emoji: "🌽",
+    emoji: "🦴",
   },
 ];
 
