@@ -161,6 +161,16 @@ export const BRANDS: Brand[] = [
     description: "오곡으로 바삭하게 튀긴 치킨",
     emoji: "🌾",
   },
+  {
+    id: "kfc",
+    real: "KFC",
+    meme: "켘엪씨",
+    menu: "오리지널 8조각",
+    color: "#E4002B",
+    chickenColor: "#FF4444",
+    description: "커넬의 오리지널 레시피 치킨",
+    emoji: "🍗",
+  },
 ];
 
 /** 브랜드 ID로 찾기 */
@@ -186,6 +196,7 @@ export const BRAND_PRICES: Record<string, number> = {
   norangtongdak: 24000,
   bodram: 21000,
   toraeore: 19000,
+  kfc: 27200,
 };
 
 /** 전체 평균 치킨 가격 */
