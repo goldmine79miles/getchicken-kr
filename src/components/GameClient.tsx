@@ -318,8 +318,11 @@ export default function GameClient() {
                   const price = BRAND_PRICES[b.id] || 0;
                   return (
                     <div key={b.id} className="flex items-center justify-between py-2 border-b border-[#f0f0f0] last:border-0">
-                      <span className="text-sm font-bold">{b.real}</span>
-                      <span className="text-sm font-extrabold">{price.toLocaleString()}원</span>
+                      <div>
+                        <span className="text-sm font-bold">{b.real}</span>
+                        <span className="text-xs text-[--color-text-muted] ml-1">{b.realMenu}</span>
+                      </div>
+                      <span className="text-sm font-extrabold shrink-0">{price.toLocaleString()}원</span>
                     </div>
                   );
                 })}
@@ -543,7 +546,7 @@ export default function GameClient() {
           <div className="mb-6">
             <h2 className="text-2xl font-extrabold mb-1">🍗 내 치킨</h2>
             <p className="text-sm text-[--color-text-muted]">
-              지금까지 {totalCurrent.toFixed(0)}g 튀김 · 완성 {gameState.completedChickens.length}마리
+              {Math.floor(totalCurrent)}/1000마리 ({totalCurrent.toFixed(1)}g) · 완성 {gameState.completedChickens.length}마리
             </p>
           </div>
 

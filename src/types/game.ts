@@ -50,6 +50,7 @@ export interface Brand {
   real: string;       // 실제 브랜드명 (표시 안 함)
   meme: string;       // 밈 네이밍
   menu: string;       // 대표 메뉴 밈 이름
+  realMenu: string;   // 실제 대표 메뉴명
   color: string;      // 브랜드 테마 색상
   chickenColor: string; // 치킨 채워지기 색상
   description: string;  // 한줄 설명
