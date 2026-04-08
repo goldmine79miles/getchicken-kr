@@ -344,7 +344,7 @@ export default function GameClient() {
               backgroundColor: capacityFull ? `${brand.color}08` : "white",
             }}
           >
-            <span className="text-2xl">📦</span>
+            <img src="/chicken-box.png" alt="치킨상자" className="w-8 h-8 object-contain" />
             <div className="text-left">
               <span className="text-sm font-bold block">포장하기</span>
               <span className="text-[10px] text-[--color-text-muted]">바구니 비우고 치킨에 담기</span>
@@ -475,7 +475,7 @@ export default function GameClient() {
         <div className="max-w-lg mx-auto flex">
           {([
             { key: "fry" as Tab, label: "치킨튀기기", icon: "🍗" },
-            { key: "mychicken" as Tab, label: "내 치킨", icon: "📦" },
+            { key: "mychicken" as Tab, label: "내 치킨", icon: "box" },
           ]).map((item) => (
             <button
               key={item.key}
@@ -483,7 +483,11 @@ export default function GameClient() {
               className="flex-1 flex flex-col items-center gap-0.5 py-1.5 transition-all"
               style={{ color: tab === item.key ? brand.color : "#8b95a1" }}
             >
-              <span className="text-xl">{item.icon}</span>
+              {item.icon === "box" ? (
+                <img src="/chicken-box.png" alt="" className="w-6 h-6 object-contain" style={{ opacity: tab === item.key ? 1 : 0.5 }} />
+              ) : (
+                <span className="text-xl">{item.icon}</span>
+              )}
               <span className="text-[10px] font-bold">{item.label}</span>
             </button>
           ))}
