@@ -202,7 +202,7 @@ export default function GameClient() {
                 <div key={item.step} className="bg-[--color-bg] rounded-2xl p-6">
                   <div className="text-4xl mb-3">
                     {item.emoji === "box" ? (
-                      <img src="/chicken-box.png" alt="치킨상자" className="w-10 h-10 object-contain mx-auto mix-blend-multiply" />
+                      <img src="/chicken-box.png" alt="치킨상자" className="w-12 h-12 object-contain mx-auto mix-blend-multiply" />
                     ) : item.emoji}
                   </div>
                   <div className="text-xs font-bold text-[--color-chicken] mb-1">STEP {item.step}</div>
@@ -689,6 +689,16 @@ export default function GameClient() {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* 하단 푸터: 약관 */}
+      <div className="mt-12 mb-24 text-center text-[11px] text-[#aaa] space-x-3">
+        <a href="/terms" className="underline hover:text-[#888]">이용약관</a>
+        <span>|</span>
+        <a href="/privacy" className="underline hover:text-[#888]">개인정보처리방침</a>
+        <span>|</span>
+        <a href="/marketing" className="underline hover:text-[#888]">마케팅 정보 수신</a>
+        <div className="mt-2 text-[10px]">문의: getchikn@gmail.com</div>
       </div>
 
       {/* 하단 네비 공간 확보 */}
