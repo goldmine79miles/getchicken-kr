@@ -346,67 +346,75 @@ export default function GameClient() {
                 </span>
               )}
             </div>
-
-            {/* 탭 소진 광고 버튼 */}
-            {!capacityFull && gameState.tapsRemaining <= 0 && (
-              <button
-                onClick={handleRefillTaps}
-                className="w-full mt-3 py-3 rounded-2xl text-sm font-bold text-white shadow-md hover:shadow-lg transition-all relative"
-                style={{ background: `linear-gradient(135deg, ${brand.color}, ${brand.color}cc)` }}
-              >
-                👆 광고 보고 다시 튀기기
-                <span className="absolute -top-1.5 -right-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md text-white bg-red-500">
-                  AD
-                </span>
-              </button>
-            )}
           </div>
 
-          {/* 지금까지 튀긴 치킨 */}
+          {/* 지금까지 튀긴 치킨 - 오도미터 스타일 */}
           <div className="text-center mb-5">
-            <div className="text-sm font-bold text-[--color-text-muted] mb-1">지금까지 튀긴 치킨</div>
-            <div className="text-4xl font-extrabold tracking-tight">
-              <span style={{ color: totalCurrent > 0 ? "#333" : "#ccc" }}>
-                {totalCurrent.toFixed(1)}
-              </span>
-              <span className="text-lg text-[--color-text-muted] ml-1">g</span>
-              <span className="text-sm text-[--color-text-muted] ml-2">/ {totalRequired}g</span>
+            <div className="text-sm font-bold text-[--color-text-muted] mb-2">지금까지 튀긴 치킨</div>
+            <div className="inline-flex items-baseline bg-[#1a1a1a] rounded-2xl px-5 py-3 shadow-inner">
+              {(() => {
+                const total = (totalCurrent + gameState.currentCapacity).toFixed(1);
+                return total.split("").map((ch, i) => (
+                  <span
+                    key={i}
+                    className={ch === "." ? "text-2xl mx-0.5" : "text-4xl font-mono font-extrabold mx-[1px]"}
+                    style={{
+                      color: "#FF8F00",
+                      textShadow: ch !== "." ? "0 0 8px rgba(255,143,0,0.4)" : "none",
+                      transition: "color 0.3s",
+                    }}
+                  >
+                    {ch}
+                  </span>
+                ));
+              })()}
+              <span className="text-lg font-bold text-[#888] ml-2">g</span>
             </div>
           </div>
 
-          {/* 포장하기 버튼 */}
-          <button
-            onClick={handlePackage}
-            disabled={gameState.currentCapacity < GAME_CONSTANTS.MIN_PACKAGE_AMOUNT}
-            className="w-full flex items-center justify-center gap-3 p-4 rounded-2xl border shadow-sm hover:shadow-md transition-all disabled:opacity-40 disabled:hover:shadow-sm relative mb-5"
-            style={{
-              borderColor: capacityFull ? brand.color : "#e8e8e8",
-              backgroundColor: capacityFull ? `${brand.color}08` : "white",
-            }}
-          >
-            <img src="/chicken-box.png" alt="치킨상자" className="w-8 h-8 object-contain mix-blend-multiply" />
-            <div className="text-left">
-              <span className="text-sm font-bold block">포장하기</span>
-              <span className="text-[10px] text-[--color-text-muted]">튀긴 치킨을 상자에 담아요</span>
-            </div>
-            <span
-              className="absolute -top-1.5 -right-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md text-white"
+          {/* 2버튼: 빠르게 튀기기 + 포장하기 (금모으기 스타일) */}
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            {/* 빠르게 튀기기 */}
+            <button
+              onClick={gameState.tapsRemaining <= 0 && !capacityFull ? handleRefillTaps : handleBoost}
+              className="relative p-4 rounded-2xl border border-[--color-border] bg-white shadow-sm hover:shadow-md transition-all text-center"
+            >
+              <div className="text-2xl mb-1">⚡</div>
+              <div className="text-sm font-extrabold">빠르게 튀기기</div>
+              <div className="text-[10px] text-[--color-text-muted] mt-0.5">
+                {gameState.tapsRemaining <= 0 && !capacityFull
+                  ? "탭 충전하기"
+                  : `속도 + ${GAME_CONSTANTS.SPEED_BOOST_PER_AD.toLocaleString()}%`}
+              </div>
+              <span className="absolute -top-1.5 -right-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md text-white bg-[#2196F3]">
+                AD
+              </span>
+            </button>
+
+            {/* 포장하기 */}
+            <button
+              onClick={handlePackage}
+              disabled={gameState.currentCapacity < GAME_CONSTANTS.MIN_PACKAGE_AMOUNT}
+              className="relative p-4 rounded-2xl border shadow-sm hover:shadow-md transition-all text-center disabled:opacity-40 disabled:hover:shadow-sm"
               style={{
-                background: capacityFull ? brand.color : "#aaa",
-                animation: capacityFull ? "pulse 2s infinite" : "none",
+                borderColor: capacityFull ? brand.color : "#e8e8e8",
+                backgroundColor: capacityFull ? `${brand.color}08` : "white",
               }}
             >
-              AD
-            </span>
-          </button>
-
-          {/* 속도 부스트 (작게) */}
-          <button
-            onClick={handleBoost}
-            className="w-full py-3 rounded-2xl text-sm font-bold border border-[--color-border] bg-white shadow-sm hover:shadow-md transition-all mb-5"
-          >
-            ⚡ 광고 보고 속도 2배 올리기
-          </button>
+              <div className="mb-1"><img src="/chicken-box.png" alt="" className="w-8 h-8 object-contain mx-auto mix-blend-multiply" /></div>
+              <div className="text-sm font-extrabold">포장하기</div>
+              <div className="text-[10px] text-[--color-text-muted] mt-0.5">튀김통의 치킨 적립</div>
+              <span
+                className="absolute -top-1.5 -right-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md text-white"
+                style={{
+                  background: capacityFull ? brand.color : "#aaa",
+                  animation: capacityFull ? "pulse 2s infinite" : "none",
+                }}
+              >
+                AD
+              </span>
+            </button>
+          </div>
 
           {/* 통계 */}
           <div className="text-center text-[11px] text-[--color-text-muted]">
