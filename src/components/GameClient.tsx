@@ -147,7 +147,7 @@ export default function GameClient() {
                 <div key={item.step} className="bg-[--color-bg] rounded-2xl p-6">
                   <div className="text-4xl mb-3">
                     {item.emoji === "box" ? (
-                      <img src="/chicken-box.png" alt="치킨상자" className="w-10 h-10 object-contain mx-auto" />
+                      <img src="/chicken-box.png" alt="치킨상자" className="w-10 h-10 object-contain mx-auto mix-blend-multiply" />
                     ) : item.emoji}
                   </div>
                   <div className="text-xs font-bold text-[--color-chicken] mb-1">STEP {item.step}</div>
@@ -372,7 +372,7 @@ export default function GameClient() {
               backgroundColor: capacityFull ? `${brand.color}08` : "white",
             }}
           >
-            <img src="/chicken-box.png" alt="치킨상자" className="w-8 h-8 object-contain" />
+            <img src="/chicken-box.png" alt="치킨상자" className="w-8 h-8 object-contain mix-blend-multiply" />
             <div className="text-left">
               <span className="text-sm font-bold block">포장하기</span>
               <span className="text-[10px] text-[--color-text-muted]">튀긴 치킨을 상자에 담아요</span>
@@ -516,7 +516,7 @@ export default function GameClient() {
               style={{ color: tab === item.key ? brand.color : "#8b95a1" }}
             >
               {item.icon === "box" ? (
-                <img src="/chicken-box.png" alt="" className="w-6 h-6 object-contain" style={{ opacity: tab === item.key ? 1 : 0.5 }} />
+                <img src="/chicken-box.png" alt="" className="w-6 h-6 object-contain mix-blend-multiply" style={{ opacity: tab === item.key ? 1 : 0.5 }} />
               ) : (
                 <span className="text-xl">{item.icon}</span>
               )}
