@@ -33,6 +33,9 @@ export default function GameClient() {
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const [showBrandPicker, setShowBrandPicker] = useState(false);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [smoothTotal, setSmoothTotal] = useState(0);
+  const smoothRef = useRef<number>(0);
+  const lastTimeRef = useRef<number>(performance.now());
 
   useEffect(() => {
     async function load() {
@@ -57,6 +60,32 @@ export default function GameClient() {
     }, 1000);
     return () => { if (tickRef.current) clearInterval(tickRef.current); };
   }, [gameState?.selectedBrand]);
+
+  // 부드러운 카운터 애니메이션 (매 프레임 보간)
+  useEffect(() => {
+    if (!gameState) return;
+    let animId: number;
+    let running = true;
+    const speedRef = { current: getCurrentSpeed(gameState) };
+    const fullRef = { current: isCapacityFull(gameState) };
+    const totalParts = PART_ORDER.reduce((sum, id) => sum + gameState.parts[id].current, 0);
+    smoothRef.current = totalParts + gameState.currentCapacity;
+    lastTimeRef.current = performance.now();
+
+    const animate = () => {
+      if (!running) return;
+      const now = performance.now();
+      const dt = (now - lastTimeRef.current) / 1000;
+      lastTimeRef.current = now;
+      if (!fullRef.current && dt < 1) {
+        smoothRef.current += speedRef.current * dt;
+      }
+      setSmoothTotal(smoothRef.current);
+      animId = requestAnimationFrame(animate);
+    };
+    animId = requestAnimationFrame(animate);
+    return () => { running = false; cancelAnimationFrame(animId); };
+  }, [gameState]);
 
   const handleTap = useCallback(() => {
     setGameState((prev) => (prev ? applyTap(prev) : prev));
@@ -351,24 +380,36 @@ export default function GameClient() {
           {/* 지금까지 튀긴 치킨 - 오도미터 스타일 */}
           <div className="text-center mb-5">
             <div className="text-sm font-bold text-[--color-text-muted] mb-2">지금까지 튀긴 치킨</div>
-            <div className="inline-flex items-baseline bg-[#1a1a1a] rounded-2xl px-5 py-3 shadow-inner">
+            <div className="flex items-end justify-center bg-[#1a1a1a] rounded-2xl px-4 py-4 shadow-inner w-full">
               {(() => {
-                const total = (totalCurrent + gameState.currentCapacity).toFixed(1);
-                return total.split("").map((ch, i) => (
-                  <span
-                    key={i}
-                    className={ch === "." ? "text-2xl mx-0.5" : "text-4xl font-mono font-extrabold mx-[1px]"}
-                    style={{
-                      color: "#FF8F00",
-                      textShadow: ch !== "." ? "0 0 8px rgba(255,143,0,0.4)" : "none",
-                      transition: "color 0.3s",
-                    }}
-                  >
-                    {ch}
-                  </span>
-                ));
+                const total = smoothTotal.toFixed(10);
+                const [intPart, decPart] = total.split(".");
+                const chars = intPart + "." + decPart;
+                const intLen = intPart.length;
+                return chars.split("").map((ch, i) => {
+                  const isDot = ch === ".";
+                  const isInt = i < intLen;
+                  const decIdx = isDot ? -1 : i - intLen - 1;
+                  // 정수부 크게, 소수점 뒤로 갈수록 조금씩 작게
+                  const fontSize = isDot ? 20 : isInt ? 32 : Math.max(16, 28 - decIdx * 1.5);
+                  return (
+                    <span
+                      key={i}
+                      className="font-mono font-extrabold inline-block leading-none"
+                      style={{
+                        fontSize,
+                        color: "#FF8F00",
+                        textShadow: !isDot ? "0 0 8px rgba(255,143,0,0.3)" : "none",
+                        width: isDot ? 10 : undefined,
+                        textAlign: "center",
+                      }}
+                    >
+                      {ch}
+                    </span>
+                  );
+                });
               })()}
-              <span className="text-lg font-bold text-[#888] ml-2">g</span>
+              <span className="text-base font-bold text-[#666] ml-2">g</span>
             </div>
           </div>
 
