@@ -275,7 +275,7 @@ export default function GameClient() {
   return (
     <>
     {header}
-    <div className="max-w-lg mx-auto px-4 py-6">
+    <div className="max-w-lg mx-auto px-4 py-6 overflow-x-hidden">
       {/* 오프라인 팝업 */}
       {showOffline && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm" onClick={() => setShowOffline(false)}>
@@ -303,7 +303,7 @@ export default function GameClient() {
             className="w-full text-center mb-4 hover:opacity-80 transition-opacity"
           >
             <div className="text-xs text-[--color-text-muted]">오늘의 치킨 평균 시세</div>
-            <div className="text-3xl font-extrabold">{avgPrice.toLocaleString()}원 <span className="text-sm text-[--color-text-muted]">▼</span></div>
+            <div className="text-2xl font-extrabold">{avgPrice.toLocaleString()}원 <span className="text-sm text-[--color-text-muted]">▼</span></div>
           </button>
 
           {/* 브랜드별 정가 리스트 */}
@@ -337,17 +337,21 @@ export default function GameClient() {
           <div className="text-center mb-5">
             <button
               onClick={() => setShowBrandPicker(!showBrandPicker)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-bold border border-[--color-border] bg-white shadow-sm hover:shadow-md transition-all"
+              className="inline-flex flex-col items-center gap-1.5 px-5 py-2.5 rounded-2xl text-sm font-bold border border-[--color-border] bg-white shadow-sm hover:shadow-md transition-all"
             >
-              <span>먹고 싶은 닭을 튀겨보세요</span>
-              <span className="text-lg">🍗</span>
-              <span
-                className="px-2.5 py-0.5 rounded-lg text-white text-xs font-extrabold"
-                style={{ background: brand.color }}
-              >
-                {brand.meme} {brand.menu}
+              <span className="flex items-center gap-1">
+                <span>먹고 싶은 닭을 튀겨보세요</span>
+                <span className="text-lg">🍗</span>
               </span>
-              <span className="text-xs text-[--color-text-muted]">▼</span>
+              <span className="flex items-center gap-1.5">
+                <span
+                  className="px-2.5 py-0.5 rounded-lg text-white text-xs font-extrabold"
+                  style={{ background: brand.color }}
+                >
+                  {brand.meme} {brand.menu}
+                </span>
+                <span className="text-xs text-[--color-text-muted]">▼</span>
+              </span>
             </button>
           </div>
 
@@ -552,7 +556,7 @@ export default function GameClient() {
             <img src="/chicken-box.png" alt="" className="w-10 h-10 object-contain mix-blend-multiply shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-extrabold">
-                치킨 <span style={{ color: brand.color }}>{Math.floor(totalCurrent)}/1000</span> 마리 포장했어요
+                치킨 <span style={{ color: brand.color }}>{(totalCurrent / 1000).toFixed(2)}</span>마리 포장했어요
               </div>
               <div className="text-[11px] text-[--color-text-muted]">
                 {totalCurrent.toFixed(1)}g 모음 · 1,000g이면 한마리 완성
@@ -570,7 +574,7 @@ export default function GameClient() {
           <div className="mb-6">
             <h2 className="text-2xl font-extrabold mb-1">🍗 내 치킨</h2>
             <p className="text-sm text-[--color-text-muted]">
-              {Math.floor(totalCurrent)}/1000마리 ({totalCurrent.toFixed(1)}g) · 완성 {gameState.completedChickens.length}마리
+              {(totalCurrent / 1000).toFixed(2)}마리 ({totalCurrent.toFixed(1)}g) · 완성 {gameState.completedChickens.length}마리
             </p>
           </div>
 
