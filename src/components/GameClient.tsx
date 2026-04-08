@@ -135,7 +135,7 @@ export default function GameClient() {
               {[
                 { step: "1", emoji: "🏷️", title: "브랜드 선택", desc: "18개 브랜드 중 하나를 골라요" },
                 { step: "2", emoji: "👆", title: "치킨 튀기기", desc: "치킨을 눌러서 튀겨요" },
-                { step: "3", emoji: "box", title: "포장하기", desc: "바구니가 차면 치킨 상자에 담아요" },
+                { step: "3", emoji: "box", title: "포장하기", desc: "치킨이 튀겨지면 상자에 담아요" },
                 { step: "4", emoji: "🍗", title: "치킨 완성", desc: "1,000g 모으면 한마리 완성!" },
               ].map((item) => (
                 <div key={item.step} className="bg-[--color-bg] rounded-2xl p-6">
@@ -319,7 +319,7 @@ export default function GameClient() {
             {/* 카피 */}
             <div className="text-center mt-3">
               {capacityFull ? (
-                <span className="text-sm font-bold text-red-500">바구니가 가득 찼어요! 포장해주세요</span>
+                <span className="text-sm font-bold text-red-500">치킨이 다 튀겨졌어요! 상자에 담아주세요</span>
               ) : (
                 <span className="text-sm font-bold text-[--color-text-muted]">🤚 치킨을 눌러서 튀겨 보아요</span>
               )}
@@ -351,7 +351,7 @@ export default function GameClient() {
             <img src="/chicken-box.png" alt="치킨상자" className="w-8 h-8 object-contain" />
             <div className="text-left">
               <span className="text-sm font-bold block">포장하기</span>
-              <span className="text-[10px] text-[--color-text-muted]">치킨 상자에 담기</span>
+              <span className="text-[10px] text-[--color-text-muted]">튀긴 치킨을 상자에 담아요</span>
             </div>
             {capacityFull && (
               <span className="absolute -top-1.5 -right-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md text-white animate-pulse" style={{ background: brand.color }}>
