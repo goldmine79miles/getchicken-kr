@@ -135,6 +135,7 @@ export default function GameClient() {
   const handleGoHome = useCallback(() => {
     localStorage.removeItem("chikin_game");
     localStorage.removeItem("_ck_v2");
+    try { indexedDB.deleteDatabase("ck_db"); } catch {}
     setGameState(null);
     setSelectedBrand(null);
   }, []);
