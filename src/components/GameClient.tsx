@@ -691,16 +691,6 @@ export default function GameClient() {
         </div>
       </div>
 
-      {/* 하단 푸터: 약관 */}
-      <div className="mt-12 mb-24 text-center text-[11px] text-[#aaa] space-x-3">
-        <a href="/terms" className="underline hover:text-[#888]">이용약관</a>
-        <span>|</span>
-        <a href="/privacy" className="underline hover:text-[#888]">개인정보처리방침</a>
-        <span>|</span>
-        <a href="/marketing" className="underline hover:text-[#888]">마케팅 정보 수신</a>
-        <div className="mt-2 text-[10px]">문의: getchikn@gmail.com</div>
-      </div>
-
       {/* 하단 네비 공간 확보 */}
       <div className="h-20" />
     </div>
