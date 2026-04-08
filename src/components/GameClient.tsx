@@ -536,7 +536,7 @@ export default function GameClient() {
                 backgroundColor: capacityFull ? `${brand.color}08` : "white",
               }}
             >
-              <div className="mb-1"><img src="/chicken-box.png" alt="" className="w-8 h-8 object-contain mx-auto mix-blend-multiply" /></div>
+              <div className="mb-1"><img src="/chicken-box.png" alt="" className="w-12 h-12 object-contain mx-auto mix-blend-multiply" /></div>
               <div className="text-sm font-extrabold">포장하기</div>
               <div className="text-[10px] text-[--color-text-muted] mt-0.5">튀김통의 치킨 적립</div>
               <span
@@ -553,7 +553,7 @@ export default function GameClient() {
 
           {/* 포장 완료 총량 (금모으기 하단 스타일) */}
           <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-[--color-border] shadow-sm">
-            <img src="/chicken-box.png" alt="" className="w-10 h-10 object-contain mix-blend-multiply shrink-0" />
+            <img src="/chicken-box.png" alt="" className="w-12 h-12 object-contain mix-blend-multiply shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-extrabold">
                 치킨 <span style={{ color: brand.color }}>{(totalCurrent / 1000).toFixed(2)}</span>마리 포장했어요
@@ -681,7 +681,7 @@ export default function GameClient() {
               style={{ color: tab === item.key ? brand.color : "#8b95a1" }}
             >
               {item.icon === "box" ? (
-                <img src="/chicken-box.png" alt="" className="w-6 h-6 object-contain mix-blend-multiply" style={{ opacity: tab === item.key ? 1 : 0.5 }} />
+                <img src="/chicken-box.png" alt="" className="w-8 h-8 object-contain mix-blend-multiply" style={{ opacity: tab === item.key ? 1 : 0.5 }} />
               ) : (
                 <span className="text-xl">{item.icon}</span>
               )}
