@@ -15,7 +15,6 @@ import {
   applySpeedBoost,
   changeBrand,
   getTotalProgress,
-  getUnconvertedChickenCount,
   isCapacityFull,
   getCurrentSpeed,
 } from "@/lib/gameSystem";
@@ -71,6 +70,7 @@ export default function GameClient() {
   const handleBoost = useCallback(() => {
     setGameState((prev) => (prev ? applySpeedBoost(prev) : prev));
   }, []);
+
 
 
   const handleGoHome = useCallback(() => {
@@ -318,10 +318,12 @@ export default function GameClient() {
 
             {/* 카피 */}
             <div className="text-center mt-3">
-              {capacityFull ? (
-                <span className="text-sm font-bold text-red-500">치킨이 다 튀겨졌어요! 상자에 담아주세요</span>
+              {capacityFull || gameState.tapsRemaining <= 0 ? (
+                <span className="text-sm font-bold text-red-500">치킨이 튀겨졌어요! 상자에 담아주세요</span>
               ) : (
-                <span className="text-sm font-bold text-[--color-text-muted]">🤚 치킨을 눌러서 튀겨 보아요</span>
+                <span className="text-sm font-bold text-[--color-text-muted]">
+                  🤚 치킨을 {gameState.tapsRemaining}번 눌러주세요
+                </span>
               )}
             </div>
           </div>
@@ -353,11 +355,15 @@ export default function GameClient() {
               <span className="text-sm font-bold block">포장하기</span>
               <span className="text-[10px] text-[--color-text-muted]">튀긴 치킨을 상자에 담아요</span>
             </div>
-            {capacityFull && (
-              <span className="absolute -top-1.5 -right-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md text-white animate-pulse" style={{ background: brand.color }}>
-                가득!
-              </span>
-            )}
+            <span
+              className="absolute -top-1.5 -right-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md text-white"
+              style={{
+                background: capacityFull || gameState.tapsRemaining <= 0 ? brand.color : "#aaa",
+                animation: capacityFull || gameState.tapsRemaining <= 0 ? "pulse 2s infinite" : "none",
+              }}
+            >
+              AD
+            </span>
           </button>
 
           {/* 속도 부스트 (작게) */}

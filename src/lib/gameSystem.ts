@@ -42,6 +42,7 @@ function createInitialState(brandId: string): GameState {
     speedPercent: 100,
     lastSpeedUpdate: Date.now(),
     notificationEnabled: false,
+    tapsRemaining: GAME_CONSTANTS.TAPS_MIN + Math.floor(Math.random() * (GAME_CONSTANTS.TAPS_MAX - GAME_CONSTANTS.TAPS_MIN + 1)),
     completedChickens: [],
     convertedPoints: 0,
     totalTaps: 0,
@@ -135,6 +136,7 @@ function migrateState(state: GameState): GameState {
   if (state.speedPercent === undefined) state.speedPercent = 100;
   if (state.lastSpeedUpdate === undefined) state.lastSpeedUpdate = Date.now();
   if (state.notificationEnabled === undefined) state.notificationEnabled = false;
+  if (state.tapsRemaining === undefined) state.tapsRemaining = GAME_CONSTANTS.TAPS_MIN + Math.floor(Math.random() * (GAME_CONSTANTS.TAPS_MAX - GAME_CONSTANTS.TAPS_MIN + 1));
   if (!state.activePart) {
     state.activePart = PART_ORDER.find(id => !state.parts[id].completed) || PART_ORDER[0];
   }
@@ -235,16 +237,30 @@ export function applyOfflineGain(state: GameState): { state: GameState; gained: 
   return { state: newState, gained: actual };
 }
 
-/** 탭 적립 */
+/** 랜덤 탭 수 생성 (5~10) */
+function randomTapRound(): number {
+  return GAME_CONSTANTS.TAPS_MIN + Math.floor(Math.random() * (GAME_CONSTANTS.TAPS_MAX - GAME_CONSTANTS.TAPS_MIN + 1));
+}
+
+/** 탭 적립 - X번 탭하면 바구니 가득 참 */
 export function applyTap(state: GameState): GameState {
-  if (isCapacityFull(state)) return state; // 바구니 꽉 참
+  if (isCapacityFull(state)) return state;
+  if (state.tapsRemaining <= 0) return state;
 
   const newState = {
     ...state,
     totalTaps: state.totalTaps + 1,
+    tapsRemaining: state.tapsRemaining - 1,
     lastCollectTime: Date.now(),
   };
-  const actual = addToCapacity(newState, GAME_CONSTANTS.TAP_AMOUNT);
+
+  // 탭당 적립량 = 남은 용량 / 남은 탭수 (마지막 탭이면 꽉 참)
+  const remaining = newState.maxCapacity - newState.currentCapacity;
+  const tapAmount = newState.tapsRemaining === 0
+    ? remaining  // 마지막 탭: 나머지 전부 채움
+    : Math.min(GAME_CONSTANTS.TAP_AMOUNT, remaining);
+
+  const actual = addToCapacity(newState, tapAmount);
   newState.totalCollected += actual;
   saveGameState(newState);
   return newState;
@@ -276,12 +292,9 @@ export function packageCapacity(state: GameState): GameState {
   // 바구니을 activePart에 적립
   distributeToActivePart(newState, newState.currentCapacity);
 
-  // 바구니 리셋 + 최대 바구니 소폭 증가
+  // 바구니 리셋 + 새 라운드 탭 수 (용량 고정)
   newState.currentCapacity = 0;
-  newState.maxCapacity = Math.min(
-    newState.maxCapacity + GAME_CONSTANTS.CAPACITY_UPGRADE_PER_AD,
-    GAME_CONSTANTS.MAX_CAPACITY_LIMIT,
-  );
+  newState.tapsRemaining = randomTapRound();
 
   // 모든 부위 완료 체크 → 한마리 완성
   const allCompleted = PART_ORDER.every((id) => newState.parts[id].completed);

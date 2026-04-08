@@ -35,6 +35,8 @@ export interface GameState {
   lastSpeedUpdate: number;            // 마지막 속도 업데이트 시간
   // 알림
   notificationEnabled: boolean;       // 알림 설정 여부
+  // 탭 제한 시스템
+  tapsRemaining: number;              // 남은 탭 수 (0이면 광고 필요)
   // 기타
   completedChickens: CompletedChicken[];
   convertedPoints: number;            // 전환한 총 포인트
@@ -86,11 +88,14 @@ export const GAME_CONSTANTS = {
   MAX_OFFLINE_HOURS: 8,           // 오프라인 최대 8시간
   POINTS_PER_PART: 50,            // 부위 1개 = 50P
   POINTS_FULL_BONUS: 200,         // 한마리 완성 보너스 = 200P (총 500P)
-  // 바구니 시스템 (금모으기 비례: 금 10원/적재 → 치킨 ~10원/적재 = 0.5g)
+  // 바구니 시스템 (금모으기 비례)
   INITIAL_MAX_CAPACITY: 2.0,      // 초기 바구니 용량 2g (~43원 어치)
   CAPACITY_UPGRADE_PER_AD: 0.5,   // 포장 1회당 바구니 +0.5g
   MAX_CAPACITY_LIMIT: 20.0,       // 바구니 최대 상한 20g
   MIN_PACKAGE_AMOUNT: 0.5,        // 최소 포장 가능량 0.5g (~10원 어치)
+  // 탭 제한 (랜덤)
+  TAPS_MIN: 5,                      // 최소 탭 수
+  TAPS_MAX: 10,                     // 최대 탭 수
   // 속도 시스템 (% 단위)
   SPEED_BOOST_PER_AD: 100,        // 광고 1회당 +100%
   SPEED_DECAY_PER_HOUR: 50,       // 시간당 -50% 감소
