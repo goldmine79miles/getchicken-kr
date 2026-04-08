@@ -7,18 +7,29 @@ interface Props {
   gameState: GameState;
   chickenColor: string;
   onTap: () => void;
+  onSelectPart: (partId: PartId) => void;
 }
 
-const PART_CLIPS: Record<PartId, string> = {
-  tail: "polygon(0% 0%, 16% 0%, 16% 100%, 0% 100%)",
-  wing: "polygon(14% 0%, 46% 0%, 46% 56%, 14% 56%)",
-  breast: "polygon(14% 54%, 46% 54%, 46% 100%, 14% 100%)",
-  drumstick: "polygon(44% 0%, 73% 0%, 73% 56%, 44% 56%)",
-  thigh: "polygon(44% 54%, 73% 54%, 73% 100%, 44% 100%)",
-  back: "polygon(71% 0%, 100% 0%, 100% 100%, 71% 100%)",
+// 실제 치킨 부위 형태의 SVG path (치킨 일러스트 기준)
+const PART_PATHS: Record<PartId, string> = {
+  drumstick: "M 160 130 C 175 125 190 135 195 150 L 210 200 C 215 215 205 225 195 220 L 175 195 C 165 180 155 155 160 130 Z",
+  wing: "M 45 85 C 55 65 80 55 100 60 L 115 70 C 105 85 90 100 70 105 C 55 108 42 100 45 85 Z",
+  breast: "M 85 95 C 100 80 130 78 145 90 L 155 120 C 155 145 140 160 120 165 C 100 168 82 155 80 135 Z",
+  thigh: "M 120 155 C 135 150 150 155 160 170 L 170 200 C 170 215 160 220 148 218 L 130 200 C 118 185 112 165 120 155 Z",
+  back: "M 95 70 C 105 60 125 58 138 65 L 145 90 C 148 105 140 115 125 118 C 105 120 90 110 88 95 Z",
+  tail: "M 55 100 C 48 90 50 75 60 70 L 78 68 C 85 72 88 85 83 98 C 78 108 62 112 55 100 Z",
 };
 
-export default function ChickenSilhouette({ gameState, chickenColor, onTap }: Props) {
+const PART_LABELS: Record<PartId, { x: number; y: number }> = {
+  drumstick: { x: 180, y: 175 },
+  wing: { x: 75, y: 82 },
+  breast: { x: 118, y: 128 },
+  thigh: { x: 142, y: 188 },
+  back: { x: 115, y: 90 },
+  tail: { x: 65, y: 88 },
+};
+
+export default function ChickenSilhouette({ gameState, chickenColor, onTap, onSelectPart }: Props) {
   const parts = gameState.parts;
 
   function getProgress(partId: PartId): number {
@@ -28,106 +39,122 @@ export default function ChickenSilhouette({ gameState, chickenColor, onTap }: Pr
     return Math.min(100, (p.current / p.required) * 100);
   }
 
-  const totalProgress = PART_ORDER.reduce(
-    (sum, id) => sum + getProgress(id), 0
-  ) / PART_ORDER.length;
-
   return (
-    <div
-      onClick={onTap}
-      className="cursor-pointer select-none relative mx-auto active:scale-[0.96] transition-transform"
-      style={{ width: 240, height: 240 }}
-    >
-      {/* 치킨 마스크 영역 (치킨 모양으로만 보임) */}
-      <div
-        className="absolute inset-0"
-        style={{
-          WebkitMaskImage: "url(/chicken.png)",
-          WebkitMaskSize: "contain",
-          WebkitMaskRepeat: "no-repeat",
-          WebkitMaskPosition: "center",
-          maskImage: "url(/chicken.png)",
-          maskSize: "contain",
-          maskRepeat: "no-repeat",
-          maskPosition: "center",
-        } as React.CSSProperties}
+    <div className="relative mx-auto" style={{ width: 280, height: 280 }}>
+      <svg
+        viewBox="20 40 220 200"
+        className="w-full h-full cursor-pointer"
+        onClick={onTap}
       >
-        {/* 회색 치킨 (배경) */}
-        <img
-          src="/chicken.png"
-          alt=""
-          draggable={false}
-          className="absolute inset-0 w-full h-full object-contain"
-          style={{ filter: "grayscale(1) brightness(1.5) opacity(0.15)" }}
-        />
+        <defs>
+          {/* 각 부위별 progress 마스크 */}
+          {PART_ORDER.map((partId) => {
+            const progress = getProgress(partId);
+            return (
+              <clipPath key={`clip-${partId}`} id={`progress-${partId}`}>
+                <rect x="0" y={240 - (progress / 100) * 240} width="240" height={(progress / 100) * 240} />
+              </clipPath>
+            );
+          })}
+        </defs>
 
-        {/* 부위별 컬러 오버레이 */}
+        {/* 전체 치킨 외곽선 */}
+        <g opacity="0.08">
+          {PART_ORDER.map((partId) => (
+            <path key={`bg-${partId}`} d={PART_PATHS[partId]} fill="#000" />
+          ))}
+        </g>
+
+        {/* 부위별 진행률 채우기 */}
         {PART_ORDER.map((partId) => {
           const progress = getProgress(partId);
-          if (progress <= 0) return null;
+          const isActive = gameState.activePart === partId;
+          const isCompleted = parts[partId].completed;
           const isPackaged = parts[partId].packaged;
 
           return (
-            <div
-              key={partId}
-              className="absolute inset-0"
-              style={{ clipPath: PART_CLIPS[partId] }}
-            >
-              <div
-                className="absolute inset-0 transition-all duration-700 ease-out"
-                style={{ clipPath: `inset(${100 - progress}% 0 0 0)` }}
+            <g key={partId}>
+              {/* 부위 영역 (클릭 가능) */}
+              <path
+                d={PART_PATHS[partId]}
+                fill={progress > 0 ? "transparent" : "#e8e8e8"}
+                stroke={isActive ? chickenColor : "#ccc"}
+                strokeWidth={isActive ? 2.5 : 1}
+                strokeDasharray={isActive && !isCompleted ? "6 3" : "none"}
+                className="cursor-pointer transition-all"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isCompleted) onSelectPart(partId);
+                }}
+              />
+
+              {/* 채워진 부분 */}
+              {progress > 0 && (
+                <g clipPath={`url(#progress-${partId})`}>
+                  <path
+                    d={PART_PATHS[partId]}
+                    fill={isPackaged ? chickenColor : isCompleted ? "#FFD700" : `${chickenColor}${isActive ? "cc" : "80"}`}
+                    className="transition-all duration-500"
+                  />
+                </g>
+              )}
+
+              {/* 부위 라벨 */}
+              <text
+                x={PART_LABELS[partId].x}
+                y={PART_LABELS[partId].y}
+                textAnchor="middle"
+                fontSize={isActive ? 11 : 9}
+                fontWeight={isActive ? 800 : 600}
+                fill={isActive ? chickenColor : "#888"}
+                className="pointer-events-none select-none"
               >
-                <img
-                  src="/chicken.png"
-                  alt=""
-                  draggable={false}
-                  className="absolute inset-0 w-full h-full object-contain"
-                  style={{
-                    filter: isPackaged ? "saturate(1.2) brightness(1.05)" : "none",
-                  }}
-                />
-              </div>
-            </div>
+                {parts[partId].name}
+              </text>
+
+              {/* 퍼센트 표시 (활성 부위) */}
+              {isActive && !isCompleted && (
+                <text
+                  x={PART_LABELS[partId].x}
+                  y={PART_LABELS[partId].y + 14}
+                  textAnchor="middle"
+                  fontSize={10}
+                  fontWeight={700}
+                  fill={chickenColor}
+                  className="pointer-events-none"
+                >
+                  {Math.floor(progress)}%
+                </text>
+              )}
+
+              {/* 완료 체크 */}
+              {isCompleted && (
+                <text
+                  x={PART_LABELS[partId].x}
+                  y={PART_LABELS[partId].y + 14}
+                  textAnchor="middle"
+                  fontSize={12}
+                  className="pointer-events-none"
+                >
+                  {isPackaged ? "📦" : "✓"}
+                </text>
+              )}
+            </g>
           );
         })}
-      </div>
 
-      {/* 김 효과 (마스크 바깥 - 잘리지 않음) */}
-      {totalProgress > 20 && (
-        <svg
-          className="absolute inset-0 w-full h-full pointer-events-none"
-          viewBox="0 0 240 240"
-        >
-          <g opacity={Math.min(0.4, totalProgress / 200)} stroke="#999" strokeWidth="2" fill="none" strokeLinecap="round">
-            <path d="M90 70 Q88 55 91 40">
-              <animate attributeName="d" values="M90 70 Q88 55 91 40;M90 70 Q92 55 89 40;M90 70 Q88 55 91 40" dur="2.5s" repeatCount="indefinite" />
+        {/* 김 효과 */}
+        {getProgress("breast") > 30 && (
+          <g opacity="0.3" stroke="#999" strokeWidth="1.5" fill="none" strokeLinecap="round">
+            <path d="M100 60 Q98 48 101 36">
+              <animate attributeName="d" values="M100 60 Q98 48 101 36;M100 60 Q102 48 99 36;M100 60 Q98 48 101 36" dur="2.5s" repeatCount="indefinite" />
             </path>
-            <path d="M110 65 Q108 50 111 35">
-              <animate attributeName="d" values="M110 65 Q108 50 111 35;M110 65 Q112 50 109 35;M110 65 Q108 50 111 35" dur="3s" repeatCount="indefinite" />
-            </path>
-            <path d="M130 70 Q128 55 131 40">
-              <animate attributeName="d" values="M130 70 Q128 55 131 40;M130 70 Q132 55 129 40;M130 70 Q128 55 131 40" dur="2.8s" repeatCount="indefinite" />
+            <path d="M125 55 Q123 43 126 31">
+              <animate attributeName="d" values="M125 55 Q123 43 126 31;M125 55 Q127 43 124 31;M125 55 Q123 43 126 31" dur="3s" repeatCount="indefinite" />
             </path>
           </g>
-        </svg>
-      )}
-
-      {/* 부위 상태 도트 (마스크 바깥) */}
-      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-        {PART_ORDER.map((partId) => {
-          const part = parts[partId];
-          return (
-            <div
-              key={partId}
-              className="w-2 h-2 rounded-full transition-colors"
-              style={{
-                backgroundColor: part.packaged ? chickenColor : part.completed ? "#FFD700" : "#ddd",
-                boxShadow: part.packaged ? `0 0 4px ${chickenColor}60` : "none",
-              }}
-            />
-          );
-        })}
-      </div>
+        )}
+      </svg>
     </div>
   );
 }

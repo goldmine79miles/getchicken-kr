@@ -16,6 +16,7 @@ import {
   convertPart,
   convertChicken,
   changeBrand,
+  selectPart,
   getTotalProgress,
   getConvertableParts,
   getUnconvertedChickenCount,
@@ -72,6 +73,10 @@ export default function GameClient() {
       if (!prev) return prev;
       return packagePart(prev, partId) ?? prev;
     });
+  }, []);
+
+  const handleSelectPart = useCallback((partId: PartId) => {
+    setGameState((prev) => (prev ? selectPart(prev, partId) : prev));
   }, []);
 
   const handleBoost = useCallback(() => {
@@ -302,7 +307,7 @@ export default function GameClient() {
               className="transition-transform inline-block"
               style={{ transform: tapEffect ? "scale(0.96)" : "scale(1)" }}
             >
-              <ChickenSilhouette gameState={gameState} chickenColor={brand.chickenColor} onTap={handleTap} />
+              <ChickenSilhouette gameState={gameState} chickenColor={brand.chickenColor} onTap={handleTap} onSelectPart={handleSelectPart} />
             </div>
 
             <button
@@ -353,7 +358,7 @@ export default function GameClient() {
             {/* 부위별 프로그레스 */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-[--color-border]">
               <h3 className="text-base font-extrabold mb-4">부위별 진행</h3>
-              <PartProgress gameState={gameState} chickenColor={brand.chickenColor} onPackage={handlePackage} />
+              <PartProgress gameState={gameState} chickenColor={brand.chickenColor} onPackage={handlePackage} onSelectPart={handleSelectPart} />
             </div>
 
             {/* 부스트 */}

@@ -33,6 +33,7 @@ function createInitialParts(): Record<PartId, PartState> {
 function createInitialState(brandId: string): GameState {
   return {
     selectedBrand: brandId,
+    activePart: PART_ORDER[0],
     parts: createInitialParts(),
     totalCollected: 0,
     lastCollectTime: Date.now(),
@@ -135,7 +136,14 @@ export function saveGameState(state: GameState): void {
 export function loadGameState(): GameState | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const state = JSON.parse(raw) as GameState;
+      // 마이그레이션: activePart 없으면 추가
+      if (!state.activePart) {
+        state.activePart = PART_ORDER.find(id => !state.parts[id].completed) || PART_ORDER[0];
+      }
+      return state;
+    }
   } catch {}
 
   // backup fallback
@@ -215,22 +223,36 @@ export function applyTick(state: GameState): GameState {
   return newState;
 }
 
-/** 적립량을 현재 활성 부위에 분배 */
+/** 적립량을 선택된 부위에 분배 */
 function distributeToActivePart(state: GameState, amount: number): void {
-  // 아직 완성 안 된 첫 번째 부위에 할당
-  for (const partId of PART_ORDER) {
-    const part = state.parts[partId];
-    if (part.completed) continue;
-
-    const newPart = { ...part };
-    newPart.current = Math.min(newPart.current + amount, newPart.required);
-    if (newPart.current >= newPart.required) {
-      newPart.current = newPart.required;
-      newPart.completed = true;
+  const partId = state.activePart;
+  const part = state.parts[partId];
+  if (part.completed) {
+    // 선택 부위가 이미 완료면 미완료 부위 중 첫번째로 자동 전환
+    for (const id of PART_ORDER) {
+      if (!state.parts[id].completed) {
+        state.activePart = id;
+        distributeToActivePart(state, amount);
+        return;
+      }
     }
-    state.parts[partId] = newPart;
-    return;
+    return; // 모든 부위 완료
   }
+
+  const newPart = { ...part };
+  newPart.current = Math.min(newPart.current + amount, newPart.required);
+  if (newPart.current >= newPart.required) {
+    newPart.current = newPart.required;
+    newPart.completed = true;
+    // 자동으로 다음 미완료 부위로 전환
+    for (const id of PART_ORDER) {
+      if (!state.parts[id].completed && id !== partId) {
+        state.activePart = id;
+        break;
+      }
+    }
+  }
+  state.parts[partId] = newPart;
 }
 
 /** 부위 포장하기 (광고 시청 후) */
@@ -317,6 +339,14 @@ export function convertChicken(state: GameState, index: number): { state: GameSt
   };
   saveGameState(newState);
   return { state: newState, points: totalPoints };
+}
+
+/** 부위 선택 변경 */
+export function selectPart(state: GameState, partId: PartId): GameState {
+  if (state.parts[partId].completed) return state; // 이미 완료된 부위는 선택 불가
+  const newState = { ...state, activePart: partId };
+  saveGameState(newState);
+  return newState;
 }
 
 /** 브랜드 변경 */

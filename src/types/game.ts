@@ -23,6 +23,7 @@ export interface CompletedChicken {
 /** 게임 전체 상태 */
 export interface GameState {
   selectedBrand: string;              // 현재 모으는 브랜드 ID
+  activePart: PartId;                 // 현재 선택한 부위
   parts: Record<PartId, PartState>;   // 부위별 상태
   totalCollected: number;             // 총 모은 양 (g)
   lastCollectTime: number;            // 마지막 적립 시간 (idle 계산)
@@ -73,11 +74,11 @@ export const PART_ORDER: PartId[] = [
 
 /** 게임 상수 */
 export const GAME_CONSTANTS = {
-  BASE_SPEED: 0.5,          // 기본 속도 (단위/초)
+  BASE_SPEED: 0.3,           // 기본 idle 속도
   TAP_AMOUNT: 2,             // 탭 1회 적립량
-  BOOST_MULTIPLIER: 24,      // 광고 부스트 배율
+  BOOST_MULTIPLIER: 10,      // 광고 부스트 배율
   BOOST_DURATION: 30 * 60 * 1000, // 부스트 지속시간 30분
-  MAX_OFFLINE_HOURS: 12,     // 오프라인 최대 적립 시간
+  MAX_OFFLINE_HOURS: 8,      // 오프라인 최대 적립 시간
   POINTS_PER_PART: 5,        // 부위 1개 전환 포인트
   POINTS_FULL_BONUS: 10,     // 한마리 완성 보너스 포인트
 };
