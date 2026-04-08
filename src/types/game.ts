@@ -57,14 +57,14 @@ export const PART_NAMES: Record<PartId, string> = {
   tail: "목",
 };
 
-/** 부위별 필요량 (기본값) */
+/** 부위별 필요량 (g) - 실제 치킨 1마리 = 1,000g 기준 */
 export const PART_REQUIREMENTS: Record<PartId, number> = {
-  drumstick: 100,
-  wing: 80,
-  breast: 150,
-  thigh: 120,
-  back: 100,
-  tail: 50,
+  drumstick: 180,
+  wing: 120,
+  breast: 280,
+  thigh: 200,
+  back: 150,
+  tail: 70,
 };
 
 /** 부위 목록 (순서) */
@@ -72,13 +72,13 @@ export const PART_ORDER: PartId[] = [
   "drumstick", "wing", "breast", "thigh", "back", "tail"
 ];
 
-/** 게임 상수 */
+/** 경제 상수 - 금모으기 수준으로 찔끔 적립 */
 export const GAME_CONSTANTS = {
-  BASE_SPEED: 0.3,           // 기본 idle 속도
-  TAP_AMOUNT: 2,             // 탭 1회 적립량
-  BOOST_MULTIPLIER: 10,      // 광고 부스트 배율
-  BOOST_DURATION: 30 * 60 * 1000, // 부스트 지속시간 30분
-  MAX_OFFLINE_HOURS: 8,      // 오프라인 최대 적립 시간
-  POINTS_PER_PART: 5,        // 부위 1개 전환 포인트
-  POINTS_FULL_BONUS: 10,     // 한마리 완성 보너스 포인트
+  BASE_SPEED: 0.003,         // idle 0.003g/s (시간당 10.8g)
+  TAP_AMOUNT: 0.1,           // 탭 1회 = 0.1g (전체 0.01%)
+  BOOST_MULTIPLIER: 10,      // 광고 부스트 10x
+  BOOST_DURATION: 30 * 60 * 1000, // 부스트 30분
+  MAX_OFFLINE_HOURS: 8,      // 오프라인 최대 8시간
+  POINTS_PER_PART: 50,       // 부위 1개 = 50P
+  POINTS_FULL_BONUS: 200,    // 한마리 완성 보너스 = 200P (총 500P)
 };

@@ -16,10 +16,10 @@ export const BRANDS: Brand[] = [
     real: "BHC",
     meme: "삐에이취씨",
     menu: "뿌릉클",
-    color: "#FF69B4",
-    chickenColor: "#FFB6C1",
-    description: "달콤한 핑크빛 크리스피",
-    emoji: "🍖",
+    color: "#E31837",
+    chickenColor: "#FF6B6B",
+    description: "달콤한 크리스피 치킨",
+    emoji: "🍗",
   },
   {
     id: "kyochon",
@@ -29,7 +29,7 @@ export const BRANDS: Brand[] = [
     color: "#C8102E",
     chickenColor: "#E8A87C",
     description: "꿀처럼 달콤한 간장 치킨",
-    emoji: "🐔",
+    emoji: "🍗",
   },
   {
     id: "goobne",
@@ -39,7 +39,7 @@ export const BRANDS: Brand[] = [
     color: "#FF4500",
     chickenColor: "#FF6347",
     description: "매콤하게 구운 바삭 치킨",
-    emoji: "🐓",
+    emoji: "🍗",
   },
   {
     id: "nene",
@@ -49,7 +49,7 @@ export const BRANDS: Brand[] = [
     color: "#9370DB",
     chickenColor: "#DDA0DD",
     description: "오리엔탈 소스의 파닭",
-    emoji: "🐤",
+    emoji: "🍗",
   },
   {
     id: "pelicana",
@@ -59,7 +59,7 @@ export const BRANDS: Brand[] = [
     color: "#FF8C00",
     chickenColor: "#FFA500",
     description: "양념의 클래식 원조 치킨",
-    emoji: "🐥",
+    emoji: "🍗",
   },
   {
     id: "puradak",
@@ -69,7 +69,7 @@ export const BRANDS: Brand[] = [
     color: "#2F4F4F",
     chickenColor: "#696969",
     description: "블랙 마늘의 깊은 풍미",
-    emoji: "🥩",
+    emoji: "🍗",
   },
   {
     id: "hosigi",
@@ -79,7 +79,7 @@ export const BRANDS: Brand[] = [
     color: "#228B22",
     chickenColor: "#90EE90",
     description: "매운 간장의 한마리 치킨",
-    emoji: "🐣",
+    emoji: "🍗",
   },
   {
     id: "mexicana",
@@ -89,7 +89,7 @@ export const BRANDS: Brand[] = [
     color: "#DAA520",
     chickenColor: "#F0E68C",
     description: "와삭하게 튀긴 정통 치킨",
-    emoji: "🦃",
+    emoji: "🍗",
   },
   {
     id: "jicoba",
@@ -99,7 +99,7 @@ export const BRANDS: Brand[] = [
     color: "#DC143C",
     chickenColor: "#FF6B6B",
     description: "새빨간 양념의 매운맛",
-    emoji: "🥚",
+    emoji: "🍗",
   },
   {
     id: "60gye",
@@ -109,7 +109,7 @@ export const BRANDS: Brand[] = [
     color: "#4169E1",
     chickenColor: "#87CEEB",
     description: "크리스피의 삼중 바삭함",
-    emoji: "🪺",
+    emoji: "🍗",
   },
   {
     id: "kkanbu",
@@ -119,7 +119,7 @@ export const BRANDS: Brand[] = [
     color: "#FFD700",
     chickenColor: "#FFEC8B",
     description: "통째로 한마리 깐부 치킨",
-    emoji: "🦴",
+    emoji: "🍗",
   },
   {
     id: "jadam",
@@ -139,7 +139,7 @@ export const BRANDS: Brand[] = [
     color: "#F4A460",
     chickenColor: "#DEB887",
     description: "우도 땅콩의 고소한 치킨",
-    emoji: "🥜",
+    emoji: "🍗",
   },
   {
     id: "bodram",
@@ -149,7 +149,7 @@ export const BRANDS: Brand[] = [
     color: "#6B8E23",
     chickenColor: "#9ACD32",
     description: "보드랍게 튀긴 후라이드",
-    emoji: "🐔",
+    emoji: "🍗",
   },
   {
     id: "toraeore",
@@ -159,7 +159,7 @@ export const BRANDS: Brand[] = [
     color: "#B8860B",
     chickenColor: "#DAA520",
     description: "오곡으로 바삭하게 튀긴 치킨",
-    emoji: "🌾",
+    emoji: "🍗",
   },
   {
     id: "kfc",
@@ -179,7 +179,7 @@ export const BRANDS: Brand[] = [
     color: "#FF6600",
     chickenColor: "#FF9944",
     description: "와우 순살의 맥스 사이즈",
-    emoji: "🐔",
+    emoji: "🍗",
   },
 ];
 

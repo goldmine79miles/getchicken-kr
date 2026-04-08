@@ -77,13 +77,19 @@ export default function ChickenSilhouette({ gameState, chickenColor, onTap }: Pr
         </svg>
       )}
 
-      {/* 퍼센트 표시 */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      {/* g 단위 표시 */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
         <span
           className="text-2xl font-extrabold drop-shadow-md"
           style={{ color: progress > 50 ? "#fff" : chickenColor }}
         >
-          {Math.floor(progress)}%
+          {totalCurrent.toFixed(1)}g
+        </span>
+        <span
+          className="text-[10px] font-bold drop-shadow-sm mt-0.5"
+          style={{ color: progress > 50 ? "#ffffffcc" : "#8b95a1" }}
+        >
+          / {totalRequired}g
         </span>
       </div>
     </div>

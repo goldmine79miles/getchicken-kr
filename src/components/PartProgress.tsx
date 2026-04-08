@@ -64,7 +64,7 @@ export default function PartProgress({ gameState, chickenColor, onPackage, onSel
               {percent > 8 && (
                 <div className="absolute inset-0 flex items-center pl-2">
                   <span className="text-[9px] font-bold text-white drop-shadow-sm">
-                    {Math.floor(percent)}%
+                    {part.current.toFixed(1)}g
                   </span>
                 </div>
               )}
@@ -83,7 +83,7 @@ export default function PartProgress({ gameState, chickenColor, onPackage, onSel
                 <span className="text-[11px] font-bold" style={{ color: chickenColor }}>모으는중</span>
               ) : (
                 <span className="text-[11px] text-[--color-text-muted] font-medium">
-                  {part.packaged ? "완료" : `${Math.floor(percent)}%`}
+                  {part.packaged ? "완료" : `${part.current.toFixed(1)}g`}
                 </span>
               )}
             </div>

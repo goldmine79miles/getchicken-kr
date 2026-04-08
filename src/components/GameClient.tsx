@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { GameState, PartId } from "@/types/game";
-import { GAME_CONSTANTS } from "@/types/game";
+import { GAME_CONSTANTS, PART_ORDER } from "@/types/game";
 import { BRANDS, getBrand, getAverageChickenPrice, BRAND_PRICES } from "@/lib/brands";
 import {
   loadGameState,
@@ -25,11 +25,11 @@ import ChickenSilhouette from "./ChickenSilhouette";
 import PartProgress from "./PartProgress";
 import BrandCard from "./BrandCard";
 
-type Tab = "game" | "collection" | "convert";
+type Tab = "collect" | "collection" | "convert";
 
 export default function GameClient() {
   const [gameState, setGameState] = useState<GameState | null>(null);
-  const [tab, setTab] = useState<Tab>("game");
+  const [tab, setTab] = useState<Tab>("collect");
   const [offlineGain, setOfflineGain] = useState(0);
   const [showOffline, setShowOffline] = useState(false);
   const [tapEffect, setTapEffect] = useState(false);
@@ -198,6 +198,8 @@ export default function GameClient() {
   const brand = getBrand(gameState.selectedBrand);
   if (!brand) return null;
   const progress = getTotalProgress(gameState);
+  const totalCurrent = PART_ORDER.reduce((sum, id) => sum + gameState.parts[id].current, 0);
+  const totalRequired = PART_ORDER.reduce((sum, id) => sum + gameState.parts[id].required, 0);
   const isBoosted = Date.now() < gameState.speedBoostExpiry;
   const avgPrice = getAverageChickenPrice();
 
@@ -250,7 +252,7 @@ export default function GameClient() {
         {/* 탭 내비게이션 */}
         <div className="flex bg-white rounded-2xl p-1.5 shadow-sm border border-[--color-border]">
           {([
-            { key: "game" as Tab, label: "🍗 게임", },
+            { key: "collect" as Tab, label: "🍗 치킨모으기" },
             { key: "collection" as Tab, label: "🏆 컬렉션" },
             { key: "convert" as Tab, label: "💰 전환" },
           ]).map((item) => (
@@ -306,7 +308,7 @@ export default function GameClient() {
       )}
 
       {/* ─── 게임 탭 ─── */}
-      {tab === "game" && (
+      {tab === "collect" && (
         <div className="grid md:grid-cols-2 gap-8">
           {/* 왼쪽: 치킨 실루엣 */}
           <div className="bg-white rounded-3xl p-8 shadow-sm border border-[--color-border] text-center">
@@ -341,7 +343,7 @@ export default function GameClient() {
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-[--color-border]">
               <div className="flex justify-between mb-3">
                 <span className="text-sm font-bold text-[--color-text-secondary]">🍗 한마리 완성까지</span>
-                <span className="text-sm font-extrabold" style={{ color: brand.color }}>{progress.toFixed(1)}%</span>
+                <span className="text-sm font-extrabold" style={{ color: brand.color }}>{totalCurrent.toFixed(1)}g / {totalRequired}g</span>
               </div>
               <div className="h-4 bg-[#f5f5f5] rounded-full overflow-hidden">
                 <div
@@ -394,7 +396,7 @@ export default function GameClient() {
               <div className="text-xl font-bold mb-2">아직 완성한 치킨이 없어요</div>
               <div className="text-sm text-[--color-text-muted] mb-8">열심히 모아서 첫 치킨을 완성해보세요!</div>
               <button
-                onClick={() => setTab("game")}
+                onClick={() => setTab("collect")}
                 className="px-8 py-3.5 rounded-2xl text-white font-bold shadow-md hover:shadow-lg transition-all"
                 style={{ background: `linear-gradient(135deg, ${brand.color}, ${brand.color}cc)` }}
               >
@@ -502,7 +504,7 @@ export default function GameClient() {
               <div className="text-xl font-bold mb-2">전환할 수 있는 치킨이 없어요</div>
               <div className="text-sm text-[--color-text-muted] mb-8">부위를 다 모으고 포장하면 전환할 수 있어요</div>
               <button
-                onClick={() => setTab("game")}
+                onClick={() => setTab("collect")}
                 className="px-8 py-3.5 rounded-2xl text-white font-bold shadow-md hover:shadow-lg transition-all"
                 style={{ background: `linear-gradient(135deg, ${brand.color}, ${brand.color}cc)` }}
               >

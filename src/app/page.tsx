@@ -11,7 +11,7 @@ export default function Home() {
             <span className="text-xl font-extrabold tracking-tight">치킨준닭</span>
           </a>
           <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-[--color-text-muted]">
-            <a href="#game" className="hover:text-[--color-text-primary] transition-colors">게임</a>
+            <a href="#game" className="hover:text-[--color-text-primary] transition-colors">치킨모으기</a>
             <a href="#brands" className="hover:text-[--color-text-primary] transition-colors">브랜드</a>
             <a href="#how" className="hover:text-[--color-text-primary] transition-colors">이용방법</a>
           </nav>
