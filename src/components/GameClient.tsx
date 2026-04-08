@@ -96,8 +96,10 @@ export default function GameClient() {
         smoothRef.current += speed * dt;
       }
 
-      // 실제 보간값 11자리 (마지막 자리까지 부드럽게)
-      setCounterDisplay(smoothRef.current.toFixed(11));
+      // 실제 값 기반 정수부+소수부, 마지막 자리까지 빠르게 돌도록 미세 노이즈 추가
+      const val = smoothRef.current;
+      const micro = isFull ? 0 : (performance.now() % 10000) / 10000000;
+      setCounterDisplay((val + micro).toFixed(11));
 
       animId = requestAnimationFrame(animate);
     };
