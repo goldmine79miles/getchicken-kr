@@ -98,7 +98,12 @@ export default function GameClient() {
 
       // 실제 값 기반 정수부+소수부, 마지막 자리까지 빠르게 돌도록 미세 노이즈 추가
       const val = smoothRef.current;
-      const micro = isFull ? 0 : (performance.now() % 10000) / 10000000;
+      const t = performance.now();
+      // 각 자릿수가 독립적으로 돌도록 여러 주기의 노이즈 합산
+      const noise9  = ((t * 7) % 10) / 1e9;
+      const noise10 = ((t * 13) % 10) / 1e10;
+      const noise11 = ((t * 31) % 10) / 1e11;
+      const micro = isFull ? 0 : noise9 + noise10 + noise11;
       setCounterDisplay((val + micro).toFixed(11));
 
       animId = requestAnimationFrame(animate);
