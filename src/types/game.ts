@@ -27,8 +27,15 @@ export interface GameState {
   parts: Record<PartId, PartState>;   // 부위별 상태
   totalCollected: number;             // 총 모은 양 (g)
   lastCollectTime: number;            // 마지막 적립 시간 (idle 계산)
-  speedBoost: number;                 // 광고 부스트 배율 (기본 1)
-  speedBoostExpiry: number;           // 부스트 만료 시간
+  // 적재량 시스템
+  currentCapacity: number;            // 현재 적재된 양 (0 ~ maxCapacity)
+  maxCapacity: number;                // 현재 최대 적재량
+  // 속도 시스템 (% 단위, 누적/감소)
+  speedPercent: number;               // 현재 속도 (100 = 기본)
+  lastSpeedUpdate: number;            // 마지막 속도 업데이트 시간
+  // 알림
+  notificationEnabled: boolean;       // 알림 설정 여부
+  // 기타
   completedChickens: CompletedChicken[];
   convertedPoints: number;            // 전환한 총 포인트
   totalTaps: number;                  // 총 탭 수
@@ -72,13 +79,20 @@ export const PART_ORDER: PartId[] = [
   "drumstick", "wing", "breast", "thigh", "back", "tail"
 ];
 
-/** 경제 상수 - 금모으기 수준으로 찔끔 적립 */
+/** 경제 상수 */
 export const GAME_CONSTANTS = {
-  BASE_SPEED: 0.003,         // idle 0.003g/s (시간당 10.8g)
-  TAP_AMOUNT: 0.1,           // 탭 1회 = 0.1g (전체 0.01%)
-  BOOST_MULTIPLIER: 10,      // 광고 부스트 10x
-  BOOST_DURATION: 30 * 60 * 1000, // 부스트 30분
-  MAX_OFFLINE_HOURS: 8,      // 오프라인 최대 8시간
-  POINTS_PER_PART: 50,       // 부위 1개 = 50P
-  POINTS_FULL_BONUS: 200,    // 한마리 완성 보너스 = 200P (총 500P)
+  BASE_SPEED: 0.003,              // idle 0.003g/s (시간당 10.8g)
+  TAP_AMOUNT: 0.1,                // 탭 1회 = 0.1g
+  MAX_OFFLINE_HOURS: 8,           // 오프라인 최대 8시간
+  POINTS_PER_PART: 50,            // 부위 1개 = 50P
+  POINTS_FULL_BONUS: 200,         // 한마리 완성 보너스 = 200P (총 500P)
+  // 적재량 시스템
+  INITIAL_MAX_CAPACITY: 5.0,      // 초기 최대 적재량 5g
+  CAPACITY_UPGRADE_PER_AD: 1.0,   // 포장 1회당 적재량 +1g
+  MAX_CAPACITY_LIMIT: 50.0,       // 적재량 상한
+  // 속도 시스템 (% 단위)
+  SPEED_BOOST_PER_AD: 100,        // 광고 1회당 +100%
+  SPEED_DECAY_PER_HOUR: 50,       // 시간당 -50% 감소
+  MIN_SPEED_PERCENT: 100,         // 최소 속도 100%
+  MAX_SPEED_PERCENT: 5000,        // 최대 속도 5000%
 };

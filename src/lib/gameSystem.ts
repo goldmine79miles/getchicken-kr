@@ -1,8 +1,8 @@
 /**
  * 치킨준닭 게임 시스템
- * - idle 적립 (오프라인 포함)
+ * - 적재량 시스템 (금모으기 스타일)
+ * - 속도 % 누적/감소
  * - 3-layer 저장: localStorage + backup + IndexedDB
- * - 부위별 수집 → 포장 → 완성 → 포인트 전환
  */
 
 import type { GameState, PartId, PartState } from "@/types/game";
@@ -37,8 +37,11 @@ function createInitialState(brandId: string): GameState {
     parts: createInitialParts(),
     totalCollected: 0,
     lastCollectTime: Date.now(),
-    speedBoost: 1,
-    speedBoostExpiry: 0,
+    currentCapacity: 0,
+    maxCapacity: GAME_CONSTANTS.INITIAL_MAX_CAPACITY,
+    speedPercent: 100,
+    lastSpeedUpdate: Date.now(),
+    notificationEnabled: false,
     completedChickens: [],
     convertedPoints: 0,
     totalTaps: 0,
@@ -123,6 +126,21 @@ function openIDB(): Promise<IDBDatabase> {
   });
 }
 
+// ─── 마이그레이션 ───
+
+function migrateState(state: GameState): GameState {
+  // v1 → v2: capacity/speed 필드 없으면 추가
+  if (state.currentCapacity === undefined) state.currentCapacity = 0;
+  if (state.maxCapacity === undefined) state.maxCapacity = GAME_CONSTANTS.INITIAL_MAX_CAPACITY;
+  if (state.speedPercent === undefined) state.speedPercent = 100;
+  if (state.lastSpeedUpdate === undefined) state.lastSpeedUpdate = Date.now();
+  if (state.notificationEnabled === undefined) state.notificationEnabled = false;
+  if (!state.activePart) {
+    state.activePart = PART_ORDER.find(id => !state.parts[id].completed) || PART_ORDER[0];
+  }
+  return state;
+}
+
 // ─── 로드 / 저장 ───
 
 export function saveGameState(state: GameState): void {
@@ -136,48 +154,69 @@ export function saveGameState(state: GameState): void {
 export function loadGameState(): GameState | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const state = JSON.parse(raw) as GameState;
-      // 마이그레이션: activePart 없으면 추가
-      if (!state.activePart) {
-        state.activePart = PART_ORDER.find(id => !state.parts[id].completed) || PART_ORDER[0];
-      }
-      return state;
-    }
+    if (raw) return migrateState(JSON.parse(raw));
   } catch {}
-
-  // backup fallback
   const backup = loadFromBackup();
   if (backup) {
-    saveGameState(backup);
-    return backup;
+    const state = migrateState(backup);
+    saveGameState(state);
+    return state;
   }
-
   return null;
 }
 
 export async function restoreFromIDB(): Promise<GameState | null> {
   const state = await loadFromIDB();
-  if (state) saveGameState(state);
+  if (state) {
+    const migrated = migrateState(state);
+    saveGameState(migrated);
+    return migrated;
+  }
   return state;
+}
+
+// ─── 속도 시스템 ───
+
+/** 속도 감소 적용 (시간 경과에 따라) */
+function applySpeedDecay(state: GameState): void {
+  const now = Date.now();
+  const hoursElapsed = (now - state.lastSpeedUpdate) / (1000 * 3600);
+  if (hoursElapsed > 0 && state.speedPercent > GAME_CONSTANTS.MIN_SPEED_PERCENT) {
+    const decay = hoursElapsed * GAME_CONSTANTS.SPEED_DECAY_PER_HOUR;
+    state.speedPercent = Math.max(GAME_CONSTANTS.MIN_SPEED_PERCENT, state.speedPercent - decay);
+    state.lastSpeedUpdate = now;
+  }
+}
+
+/** 현재 유효 속도 (g/s) */
+export function getCurrentSpeed(state: GameState): number {
+  return GAME_CONSTANTS.BASE_SPEED * (state.speedPercent / 100);
+}
+
+// ─── 적재량 시스템 ───
+
+/** 적재량에 추가 (최대까지만) - 실제 적립된 양 반환 */
+function addToCapacity(state: GameState, amount: number): number {
+  const space = state.maxCapacity - state.currentCapacity;
+  const actual = Math.min(amount, space);
+  state.currentCapacity += actual;
+  return actual;
+}
+
+/** 적재량이 꽉 찼는지 */
+export function isCapacityFull(state: GameState): boolean {
+  return state.currentCapacity >= state.maxCapacity - 0.001;
 }
 
 // ─── 게임 로직 ───
 
-/** 현재 유효 속도 (부스트 포함) */
-export function getCurrentSpeed(state: GameState): number {
-  const now = Date.now();
-  const boost = now < state.speedBoostExpiry ? state.speedBoost : 1;
-  return GAME_CONSTANTS.BASE_SPEED * boost;
-}
-
 /** 오프라인 적립 계산 (앱 재진입 시) */
 export function calculateOfflineGain(state: GameState): number {
   const now = Date.now();
-  const elapsed = (now - state.lastCollectTime) / 1000; // 초
+  const elapsed = (now - state.lastCollectTime) / 1000;
   const maxSeconds = GAME_CONSTANTS.MAX_OFFLINE_HOURS * 3600;
   const cappedElapsed = Math.min(elapsed, maxSeconds);
-  // 오프라인에서는 부스트 적용 안 함 (기본 속도만)
+  // 오프라인에서는 기본 속도만 (속도 부스트 없음)
   return cappedElapsed * GAME_CONSTANTS.BASE_SPEED;
 }
 
@@ -187,91 +226,66 @@ export function applyOfflineGain(state: GameState): { state: GameState; gained: 
   if (gained <= 0) return { state, gained: 0 };
 
   const newState = { ...state, parts: { ...state.parts } };
-  distributeToActivePart(newState, gained);
-  newState.totalCollected += gained;
+  applySpeedDecay(newState);
+  // 오프라인 적립은 적재량으로 들어감
+  const actual = addToCapacity(newState, gained);
+  newState.totalCollected += actual;
   newState.lastCollectTime = Date.now();
   saveGameState(newState);
-  return { state: newState, gained };
+  return { state: newState, gained: actual };
 }
 
 /** 탭 적립 */
 export function applyTap(state: GameState): GameState {
+  if (isCapacityFull(state)) return state; // 적재량 꽉 참
+
   const newState = {
     ...state,
-    parts: { ...state.parts },
     totalTaps: state.totalTaps + 1,
     lastCollectTime: Date.now(),
   };
-  const amount = GAME_CONSTANTS.TAP_AMOUNT;
-  distributeToActivePart(newState, amount);
-  newState.totalCollected += amount;
+  const actual = addToCapacity(newState, GAME_CONSTANTS.TAP_AMOUNT);
+  newState.totalCollected += actual;
   saveGameState(newState);
   return newState;
 }
 
 /** 실시간 idle 틱 (1초마다 호출) */
 export function applyTick(state: GameState): GameState {
-  const speed = getCurrentSpeed(state);
-  const newState = {
-    ...state,
-    parts: { ...state.parts },
-    lastCollectTime: Date.now(),
-  };
-  distributeToActivePart(newState, speed);
-  newState.totalCollected += speed;
+  if (isCapacityFull(state)) return state; // 적재량 꽉 참
+
+  const newState = { ...state, lastCollectTime: Date.now() };
+  applySpeedDecay(newState);
+  const speed = getCurrentSpeed(newState);
+  const actual = addToCapacity(newState, speed);
+  newState.totalCollected += actual;
   saveGameState(newState);
   return newState;
 }
 
-/** 적립량을 선택된 부위에 분배 */
-function distributeToActivePart(state: GameState, amount: number): void {
-  const partId = state.activePart;
-  const part = state.parts[partId];
-  if (part.completed) {
-    // 선택 부위가 이미 완료면 미완료 부위 중 첫번째로 자동 전환
-    for (const id of PART_ORDER) {
-      if (!state.parts[id].completed) {
-        state.activePart = id;
-        distributeToActivePart(state, amount);
-        return;
-      }
-    }
-    return; // 모든 부위 완료
-  }
-
-  const newPart = { ...part };
-  newPart.current = Math.min(newPart.current + amount, newPart.required);
-  if (newPart.current >= newPart.required) {
-    newPart.current = newPart.required;
-    newPart.completed = true;
-    // 자동으로 다음 미완료 부위로 전환
-    for (const id of PART_ORDER) {
-      if (!state.parts[id].completed && id !== partId) {
-        state.activePart = id;
-        break;
-      }
-    }
-  }
-  state.parts[partId] = newPart;
-}
-
-/** 부위 포장하기 (광고 시청 후) */
-export function packagePart(state: GameState, partId: PartId): GameState | null {
-  const part = state.parts[partId];
-  if (!part.completed || part.packaged) return null;
+/** 포장하기 (광고 시청) - 적재량을 activePart에 적립 + 적재량 리셋 */
+export function packageCapacity(state: GameState): GameState {
+  if (state.currentCapacity <= 0) return state;
 
   const newState = {
     ...state,
-    parts: {
-      ...state.parts,
-      [partId]: { ...part, packaged: true },
-    },
+    parts: { ...state.parts },
     totalAdsWatched: state.totalAdsWatched + 1,
   };
 
-  // 모든 부위 포장 완료 → 한마리 완성
-  const allPackaged = PART_ORDER.every((id) => newState.parts[id].packaged);
-  if (allPackaged) {
+  // 적재량을 activePart에 적립
+  distributeToActivePart(newState, newState.currentCapacity);
+
+  // 적재량 리셋 + 최대 적재량 소폭 증가
+  newState.currentCapacity = 0;
+  newState.maxCapacity = Math.min(
+    newState.maxCapacity + GAME_CONSTANTS.CAPACITY_UPGRADE_PER_AD,
+    GAME_CONSTANTS.MAX_CAPACITY_LIMIT,
+  );
+
+  // 모든 부위 완료 체크 → 한마리 완성
+  const allCompleted = PART_ORDER.every((id) => newState.parts[id].completed);
+  if (allCompleted) {
     newState.completedChickens = [
       ...newState.completedChickens,
       {
@@ -282,22 +296,69 @@ export function packagePart(state: GameState, partId: PartId): GameState | null 
         pointsEarned: 0,
       },
     ];
-    // 부위 리셋 (새로운 치킨 시작)
     newState.parts = createInitialParts();
+    newState.activePart = PART_ORDER[0];
   }
 
   saveGameState(newState);
   return newState;
 }
 
-/** 광고 부스트 적용 */
+/** 광고로 속도 부스트 (+100%) */
 export function applySpeedBoost(state: GameState): GameState {
   const newState = {
     ...state,
-    speedBoost: GAME_CONSTANTS.BOOST_MULTIPLIER,
-    speedBoostExpiry: Date.now() + GAME_CONSTANTS.BOOST_DURATION,
+    speedPercent: Math.min(
+      state.speedPercent + GAME_CONSTANTS.SPEED_BOOST_PER_AD,
+      GAME_CONSTANTS.MAX_SPEED_PERCENT,
+    ),
+    lastSpeedUpdate: Date.now(),
     totalAdsWatched: state.totalAdsWatched + 1,
   };
+  saveGameState(newState);
+  return newState;
+}
+
+/** 적립량을 선택된 부위에 분배 */
+function distributeToActivePart(state: GameState, amount: number): void {
+  let remaining = amount;
+
+  while (remaining > 0) {
+    const partId = state.activePart;
+    const part = state.parts[partId];
+
+    if (part.completed) {
+      // 다음 미완료 부위 찾기
+      const nextPart = PART_ORDER.find(id => !state.parts[id].completed);
+      if (!nextPart) return; // 모든 부위 완료
+      state.activePart = nextPart;
+      continue;
+    }
+
+    const newPart = { ...part };
+    const space = newPart.required - newPart.current;
+    const fill = Math.min(remaining, space);
+    newPart.current += fill;
+    remaining -= fill;
+
+    if (newPart.current >= newPart.required) {
+      newPart.current = newPart.required;
+      newPart.completed = true;
+      // 다음 미완료 부위로 전환
+      const nextPart = PART_ORDER.find(id => !state.parts[id].completed && id !== partId);
+      if (nextPart) state.activePart = nextPart;
+    }
+
+    state.parts[partId] = newPart;
+
+    if (fill <= 0) break; // 안전장치
+  }
+}
+
+/** 부위 선택 변경 */
+export function selectPart(state: GameState, partId: PartId): GameState {
+  if (state.parts[partId].completed) return state;
+  const newState = { ...state, activePart: partId };
   saveGameState(newState);
   return newState;
 }
@@ -305,14 +366,14 @@ export function applySpeedBoost(state: GameState): GameState {
 /** 부위 전환 (토스포인트) */
 export function convertPart(state: GameState, partId: PartId): { state: GameState; points: number } | null {
   const part = state.parts[partId];
-  if (!part.packaged) return null;
+  if (!part.completed) return null;
 
   const points = GAME_CONSTANTS.POINTS_PER_PART;
   const newState = {
     ...state,
     parts: {
       ...state.parts,
-      [partId]: { ...part, packaged: false, completed: false, current: 0 },
+      [partId]: { ...part, completed: false, current: 0 },
     },
     convertedPoints: state.convertedPoints + points,
   };
@@ -341,20 +402,9 @@ export function convertChicken(state: GameState, index: number): { state: GameSt
   return { state: newState, points: totalPoints };
 }
 
-/** 부위 선택 변경 */
-export function selectPart(state: GameState, partId: PartId): GameState {
-  if (state.parts[partId].completed) return state; // 이미 완료된 부위는 선택 불가
-  const newState = { ...state, activePart: partId };
-  saveGameState(newState);
-  return newState;
-}
-
 /** 브랜드 변경 */
 export function changeBrand(state: GameState, brandId: string): GameState {
-  const newState = {
-    ...state,
-    selectedBrand: brandId,
-  };
+  const newState = { ...state, selectedBrand: brandId };
   saveGameState(newState);
   return newState;
 }
@@ -373,20 +423,19 @@ export function getTotalProgress(state: GameState): number {
   return totalRequired > 0 ? (totalCurrent / totalRequired) * 100 : 0;
 }
 
-/** 현재 활성 부위 ID */
-export function getActivePart(state: GameState): PartId | null {
-  for (const partId of PART_ORDER) {
-    if (!state.parts[partId].completed) return partId;
-  }
-  return null;
-}
-
-/** 전환 가능한 부위 목록 */
+/** 전환 가능한 부위 목록 (완료된 부위) */
 export function getConvertableParts(state: GameState): PartId[] {
-  return PART_ORDER.filter((id) => state.parts[id].packaged);
+  return PART_ORDER.filter((id) => state.parts[id].completed);
 }
 
 /** 미전환 완성 치킨 수 */
 export function getUnconvertedChickenCount(state: GameState): number {
   return state.completedChickens.filter((c) => !c.converted).length;
+}
+
+/** 알림 설정 토글 */
+export function toggleNotification(state: GameState): GameState {
+  const newState = { ...state, notificationEnabled: !state.notificationEnabled };
+  saveGameState(newState);
+  return newState;
 }
