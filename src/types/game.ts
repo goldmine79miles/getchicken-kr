@@ -54,7 +54,7 @@ export const PART_NAMES: Record<PartId, string> = {
   breast: "가슴살",
   thigh: "넓적다리",
   back: "등",
-  tail: "꼬리",
+  tail: "목",
 };
 
 /** 부위별 필요량 (기본값) */

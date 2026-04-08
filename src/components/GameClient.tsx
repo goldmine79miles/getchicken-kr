@@ -307,19 +307,15 @@ export default function GameClient() {
               className="transition-transform inline-block"
               style={{ transform: tapEffect ? "scale(0.96)" : "scale(1)" }}
             >
-              <ChickenSilhouette gameState={gameState} chickenColor={brand.chickenColor} onTap={handleTap} onSelectPart={handleSelectPart} />
+              <ChickenSilhouette gameState={gameState} chickenColor={brand.chickenColor} onTap={handleTap} />
             </div>
 
-            <button
-              onClick={handleTap}
-              className="mt-6 px-8 py-3.5 rounded-2xl text-white font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm"
-              style={{ background: `linear-gradient(135deg, ${brand.color}, ${brand.color}bb)` }}
-            >
-              👆 클릭해서 {brand.meme} 모으기
-            </button>
+            <div className="mt-3 text-sm font-bold" style={{ color: brand.color }}>
+              👆 치킨을 터치해서 모으기
+            </div>
 
             {/* 속도 표시 */}
-            <div className="mt-4">
+            <div className="mt-2">
               <span
                 className="inline-block px-4 py-1.5 rounded-full text-[13px] font-bold"
                 style={{

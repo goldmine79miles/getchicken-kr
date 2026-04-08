@@ -9,7 +9,7 @@ const PART_EMOJI: Record<PartId, string> = {
   breast: "🥩",
   thigh: "🦵",
   back: "🦴",
-  tail: "🌿",
+  tail: "🦴",
 };
 
 interface Props {
