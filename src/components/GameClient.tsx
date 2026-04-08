@@ -140,7 +140,7 @@ export default function GameClient() {
             <h2 className="text-2xl md:text-3xl font-extrabold text-center mb-12">이렇게 모아요</h2>
             <div className="grid md:grid-cols-4 gap-6 text-center">
               {[
-                { step: "1", emoji: "🏷️", title: "브랜드 선택", desc: "17개 브랜드 중 하나를 골라요" },
+                { step: "1", emoji: "🏷️", title: "브랜드 선택", desc: "18개 브랜드 중 하나를 골라요" },
                 { step: "2", emoji: "👆", title: "터치로 적립", desc: "치킨을 터치하거나 자동으로 모여요" },
                 { step: "3", emoji: "🥡", title: "부위별 포장", desc: "6부위를 다 모으면 한마리 완성!" },
                 { step: "4", emoji: "🍗", title: "치킨 받기", desc: "완성하면 진짜 치킨이 온다!" },

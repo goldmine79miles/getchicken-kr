@@ -171,6 +171,16 @@ export const BRANDS: Brand[] = [
     description: "커넬의 오리지널 레시피 치킨",
     emoji: "🍗",
   },
+  {
+    id: "momstouch",
+    real: "맘스터치",
+    meme: "맘쓰터취",
+    menu: "와우순살맥스",
+    color: "#FF6600",
+    chickenColor: "#FF9944",
+    description: "와우 순살의 맥스 사이즈",
+    emoji: "🐔",
+  },
 ];
 
 /** 브랜드 ID로 찾기 */
@@ -197,6 +207,7 @@ export const BRAND_PRICES: Record<string, number> = {
   bodram: 21000,
   toraeore: 19000,
   kfc: 27200,
+  momstouch: 22600,
 };
 
 /** 전체 평균 치킨 가격 */
