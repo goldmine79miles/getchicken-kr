@@ -100,10 +100,11 @@ export default function GameClient() {
       const val = smoothRef.current;
       const t = performance.now();
       // 각 자릿수가 독립적으로 돌도록 여러 주기의 노이즈 합산
+      const noise8  = ((t * 3) % 10) / 1e8;
       const noise9  = ((t * 7) % 10) / 1e9;
       const noise10 = ((t * 13) % 10) / 1e10;
       const noise11 = ((t * 31) % 10) / 1e11;
-      const micro = isFull ? 0 : noise9 + noise10 + noise11;
+      const micro = isFull ? 0 : noise8 + noise9 + noise10 + noise11;
       setCounterDisplay((val + micro).toFixed(11));
 
       animId = requestAnimationFrame(animate);
