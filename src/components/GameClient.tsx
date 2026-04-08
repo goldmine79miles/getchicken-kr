@@ -229,23 +229,23 @@ export default function GameClient() {
         </div>
       )}
 
-      {/* 상단 브랜드 + 시세 + 탭 네비 */}
+      {/* 오늘의 치킨 평균 시세 배너 */}
+      <div className="bg-white rounded-2xl p-4 mb-6 shadow-sm border border-[--color-border] text-center">
+        <div className="text-xs text-[--color-text-muted] mb-1">오늘의 치킨 평균 시세 (18개 브랜드)</div>
+        <div className="text-3xl font-extrabold">{avgPrice.toLocaleString()}원</div>
+      </div>
+
+      {/* 브랜드 + 탭 네비 */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setShowBrandPicker(!showBrandPicker)}
-            className="flex items-center gap-2.5 px-5 py-2.5 rounded-2xl text-white font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
-            style={{ background: `linear-gradient(135deg, ${brand.color}, ${brand.color}cc)` }}
-          >
-            <span className="text-xl">{brand.emoji}</span>
-            <span>{brand.meme}</span>
-            <span className="text-xs opacity-70">▼</span>
-          </button>
-          <div>
-            <div className="text-xs text-[--color-text-muted]">오늘의 치킨 시세</div>
-            <div className="text-2xl font-extrabold">{avgPrice.toLocaleString()}원</div>
-          </div>
-        </div>
+        <button
+          onClick={() => setShowBrandPicker(!showBrandPicker)}
+          className="flex items-center gap-2.5 px-5 py-2.5 rounded-2xl text-white font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
+          style={{ background: `linear-gradient(135deg, ${brand.color}, ${brand.color}cc)` }}
+        >
+          <span className="text-xl">{brand.emoji}</span>
+          <span>{brand.meme}</span>
+          <span className="text-xs opacity-70">▼</span>
+        </button>
 
         {/* 탭 내비게이션 */}
         <div className="flex bg-white rounded-2xl p-1.5 shadow-sm border border-[--color-border]">
