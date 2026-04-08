@@ -95,8 +95,8 @@ export default function GameClient() {
         smoothRef.current += speed * dt;
       }
 
-      // 실제 정밀도 6자리 + 코스메틱 마지막 4자리 (항상 스피닝)
-      const realPart = smoothRef.current.toFixed(6);
+      // 실제 정밀도 4자리 + 코스메틱 마지막 4자리 (항상 스피닝)
+      const realPart = smoothRef.current.toFixed(4);
       const micro = Math.floor(now * 7.77) % 10000;
       const display = realPart + micro.toString().padStart(4, "0");
       setCounterDisplay(display);
@@ -385,12 +385,18 @@ export default function GameClient() {
               <ChickenSilhouette gameState={gameState} chickenColor={brand.chickenColor} capacityPercent={capacityPercent} onTap={handleTap} />
             </div>
 
-            {/* 카피 */}
+            {/* 카피 + 탭소진 시 바로 광고 버튼 */}
             <div className="text-center mt-3">
               {capacityFull ? (
                 <span className="text-sm font-bold text-red-500">튀김통이 가득 찼어요! 포장하면 더 튀길 수 있어요</span>
               ) : gameState.tapsRemaining <= 0 ? (
-                <span className="text-sm font-bold text-orange-500">광고 보고 더 튀기기</span>
+                <button
+                  onClick={handleRefillTaps}
+                  className="px-5 py-2.5 rounded-xl text-sm font-extrabold text-white shadow-md active:scale-95 transition-transform"
+                  style={{ background: "linear-gradient(135deg, #FF6B35, #FF8F5E)" }}
+                >
+                  ⚡ 광고 보고 더 튀기기
+                </button>
               ) : (
                 <span className="text-sm font-bold text-[--color-text-muted]">
                   🤚 치킨을 {gameState.tapsRemaining}번 눌러주세요
@@ -399,21 +405,20 @@ export default function GameClient() {
             </div>
           </div>
 
-          {/* 지금까지 튀긴 치킨 - 오도미터 스타일 */}
+          {/* 튀김통 오도미터 */}
           <div className="text-center mb-5">
             <div className="text-sm font-bold text-[--color-text-muted] mb-2">튀김통</div>
-            <div className="flex items-end justify-center bg-[#1a1a1a] rounded-2xl px-4 py-4 shadow-inner w-full">
+            <div className="flex items-center justify-center bg-[#1a1a1a] rounded-2xl px-3 py-3 shadow-inner overflow-hidden">
               {(() => {
                 const total = counterDisplay;
                 const [intPart, decPart] = total.split(".");
-                const chars = intPart + "." + decPart;
+                const chars = (intPart + "." + decPart).split("");
                 const intLen = intPart.length;
-                return chars.split("").map((ch, i) => {
+                return chars.map((ch, i) => {
                   const isDot = ch === ".";
                   const isInt = i < intLen;
                   const decIdx = isDot ? -1 : i - intLen - 1;
-                  // 정수부 크게, 소수점 뒤로 갈수록 조금씩 작게
-                  const fontSize = isDot ? 20 : isInt ? 32 : Math.max(16, 28 - decIdx * 1.5);
+                  const fontSize = isDot ? 16 : isInt ? 26 : Math.max(13, 22 - decIdx * 1);
                   return (
                     <span
                       key={i}
@@ -422,7 +427,7 @@ export default function GameClient() {
                         fontSize,
                         color: "#FF8F00",
                         textShadow: !isDot ? "0 0 8px rgba(255,143,0,0.3)" : "none",
-                        width: isDot ? 10 : undefined,
+                        width: isDot ? 8 : undefined,
                         textAlign: "center",
                       }}
                     >
@@ -431,7 +436,7 @@ export default function GameClient() {
                   );
                 });
               })()}
-              <span className="text-base font-bold text-[#666] ml-2">g</span>
+              <span className="text-sm font-bold text-[#666] ml-1">g</span>
             </div>
           </div>
 
