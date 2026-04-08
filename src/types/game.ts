@@ -90,7 +90,7 @@ export const GAME_CONSTANTS = {
   POINTS_FULL_BONUS: 200,         // 한마리 완성 보너스 = 200P (총 500P)
   // 튀김통 시스템 (용량 고정, 속도만 변동)
   INITIAL_MAX_CAPACITY: 0.5,      // 튀김통 0.5g (고정, 1회 ~10원 = 금모으기 동일)
-  MIN_PACKAGE_AMOUNT: 0.2,        // 최소 포장 가능량 0.2g
+  MIN_PACKAGE_AMOUNT: 0.01,       // 최소 포장 가능량 0.01g (소량이라도 옮기기 가능)
   // 탭 제한 (랜덤)
   TAPS_MIN: 15,                     // 최소 탭 수
   TAPS_MAX: 30,                     // 최대 탭 수

@@ -387,7 +387,7 @@ export default function GameClient() {
             {/* 카피 */}
             <div className="text-center mt-3">
               {capacityFull ? (
-                <span className="text-sm font-bold text-red-500">튀김통이 가득 찼어요! 상자에 담아주세요</span>
+                <span className="text-sm font-bold text-red-500">튀김통이 가득 찼어요! 포장하면 더 튀길 수 있어요</span>
               ) : gameState.tapsRemaining <= 0 ? (
                 <span className="text-sm font-bold text-orange-500">탭 소진! 광고 보고 다시 튀기기</span>
               ) : (
