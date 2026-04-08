@@ -1,19 +1,15 @@
-@import "tailwindcss";
+@import "tailwindcss" layer(tailwind);
 
-@theme {
-  --color-chicken: #FF6B35;
-  --color-chicken-light: #FFF0E0;
-  --color-bg: #FAFAFA;
-  --color-text-primary: #191f28;
-  --color-text-secondary: #4e5968;
-  --color-text-muted: #8b95a1;
-  --color-border: #e8e8e8;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@layer tailwind {
+  @theme {
+    --color-chicken: #FF6B35;
+    --color-chicken-light: #FFF0E0;
+    --color-bg: #FAFAFA;
+    --color-text-primary: #191f28;
+    --color-text-secondary: #4e5968;
+    --color-text-muted: #8b95a1;
+    --color-border: #e8e8e8;
+  }
 }
 
 body {
