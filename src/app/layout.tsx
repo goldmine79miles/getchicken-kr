@@ -2,9 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "치킨준닭 | 치킨 모아서 치킨 받자!",
-  description: "좋아하는 치킨 브랜드를 골라 부위별로 모으고, 한마리 완성하면 진짜 치킨을 받자! 12개 브랜드 치킨 수집 게임.",
-  keywords: ["치킨준닭", "치킨 게임", "치킨 모으기", "치킨 받기", "idle game", "치킨 브랜드"],
+  title: "치킨준닭 | 치킨을 튀겨라!",
+  description: "좋아하는 치킨 브랜드를 골라 부위별로 모으고, 한마리 완성하면 진짜 치킨이 온다! 12개 브랜드 치킨 수집 게임.",
+  keywords: ["치킨준닭", "치킨 게임", "치킨 모으기", "치킨을 튀겨라", "idle game", "치킨 브랜드"],
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -17,8 +17,8 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   openGraph: {
-    title: "치킨준닭 | 치킨 모아서 치킨 받자!",
-    description: "좋아하는 치킨 브랜드를 골라 부위별로 모으고, 한마리 완성하면 진짜 치킨을 받자!",
+    title: "치킨준닭 | 치킨을 튀겨라!",
+    description: "좋아하는 치킨 브랜드를 골라 부위별로 모으고, 한마리 완성하면 진짜 치킨이 온다!",
     type: "website",
     locale: "ko_KR",
   },

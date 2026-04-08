@@ -113,11 +113,11 @@ export default function GameClient() {
           <div className="max-w-6xl mx-auto px-6 text-center">
             <div className="text-7xl md:text-8xl mb-6">🍗</div>
             <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4">
-              치킨 모아서<br />치킨 받자
+              치킨을<br />튀겨라
             </h1>
             <p className="text-lg md:text-xl text-[--color-text-secondary] max-w-lg mx-auto mb-10">
               좋아하는 브랜드 치킨을 부위별로 모으고,<br className="hidden md:block" />
-              한마리 완성하면 진짜 치킨을 받자!
+              한마리 완성하면 진짜 치킨이 온다!
             </p>
             <a
               href="#brands"
@@ -131,14 +131,14 @@ export default function GameClient() {
 
         {/* 이용방법 */}
         <section id="how" className="py-20 bg-white">
-          <div className="max-w-4xl mx-auto px-6">
+          <div className="max-w-6xl mx-auto px-6">
             <h2 className="text-2xl md:text-3xl font-extrabold text-center mb-12">이렇게 모아요</h2>
             <div className="grid md:grid-cols-4 gap-6 text-center">
               {[
                 { step: "1", emoji: "🏷️", title: "브랜드 선택", desc: "12개 브랜드 중 하나를 골라요" },
                 { step: "2", emoji: "👆", title: "터치로 적립", desc: "치킨을 터치하거나 자동으로 모여요" },
                 { step: "3", emoji: "📦", title: "부위별 포장", desc: "6부위를 다 모으면 한마리 완성!" },
-                { step: "4", emoji: "🍗", title: "치킨 받기", desc: "완성하면 진짜 치킨을 받아요" },
+                { step: "4", emoji: "🍗", title: "치킨 받기", desc: "완성하면 진짜 치킨이 온다!" },
               ].map((item) => (
                 <div key={item.step} className="bg-[--color-bg] rounded-2xl p-6">
                   <div className="text-4xl mb-3">{item.emoji}</div>
@@ -153,7 +153,7 @@ export default function GameClient() {
 
         {/* 브랜드 선택 */}
         <section id="brands" className="py-20">
-          <div className="max-w-5xl mx-auto px-6">
+          <div className="max-w-6xl mx-auto px-6">
             <h2 className="text-2xl md:text-3xl font-extrabold text-center mb-3">어떤 치킨을 모을까요?</h2>
             <p className="text-center text-[--color-text-muted] mb-10">좋아하는 브랜드를 선택하면 그 치킨을 모아요</p>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
