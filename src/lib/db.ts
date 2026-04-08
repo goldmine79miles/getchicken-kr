@@ -21,3 +21,18 @@ export async function initUserState() {
   `;
   await sql`CREATE INDEX IF NOT EXISTS idx_user_state_sync ON user_state(last_sync_at)`;
 }
+
+/** 푸시 발송 로그 테이블 (중복 방지) */
+export async function initPushLog() {
+  const sql = getDb();
+  await sql`
+    CREATE TABLE IF NOT EXISTS push_log (
+      id SERIAL PRIMARY KEY,
+      user_key VARCHAR(100) NOT NULL,
+      campaign VARCHAR(50) NOT NULL,
+      sent_at TIMESTAMP DEFAULT NOW(),
+      toss_result TEXT
+    )
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS idx_push_log_lookup ON push_log(user_key, campaign, sent_at)`;
+}
