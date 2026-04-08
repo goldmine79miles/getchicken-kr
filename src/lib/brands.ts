@@ -164,7 +164,7 @@ export const BRANDS: Brand[] = [
   {
     id: "kfc",
     real: "KFC",
-    meme: "켘엪씨",
+    meme: "크프크",
     menu: "오리지널 8조각",
     color: "#E4002B",
     chickenColor: "#FF4444",
