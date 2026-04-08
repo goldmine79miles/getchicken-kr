@@ -345,7 +345,7 @@ export default function GameClient() {
                 className="px-2.5 py-0.5 rounded-lg text-white text-xs font-extrabold"
                 style={{ background: brand.color }}
               >
-                {brand.meme}
+                {brand.meme} {brand.menu}
               </span>
               <span className="text-xs text-[--color-text-muted]">▼</span>
             </button>
