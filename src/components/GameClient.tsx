@@ -107,7 +107,12 @@ export default function GameClient() {
   }, []); // 한번만 시작, ref로 최신 state 읽음
 
   const handleTap = useCallback(() => {
-    setGameState((prev) => (prev ? applyTap(prev) : prev));
+    setGameState((prev) => {
+      if (!prev) return prev;
+      // 탭 소진 → 치킨 누르면 바로 광고(탭 충전)
+      if (prev.tapsRemaining <= 0) return refillTaps(prev);
+      return applyTap(prev);
+    });
     setTapEffect(true);
     setTimeout(() => setTapEffect(false), 150);
   }, []);
