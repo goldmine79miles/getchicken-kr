@@ -96,8 +96,8 @@ export default function GameClient() {
         smoothRef.current += speed * dt;
       }
 
-      // 실제 보간값 8자리 (일정하게 증가)
-      setCounterDisplay(smoothRef.current.toFixed(8));
+      // 실제 보간값 11자리 (마지막 자리까지 부드럽게)
+      setCounterDisplay(smoothRef.current.toFixed(11));
 
       animId = requestAnimationFrame(animate);
     };

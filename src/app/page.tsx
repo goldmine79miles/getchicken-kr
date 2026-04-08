@@ -8,7 +8,7 @@ export default function Home() {
       </main>
 
       {/* 푸터 */}
-      <footer className="bg-white border-t border-[--color-border] py-6 mt-4">
+      <footer className="bg-white border-t border-[--color-border] py-6 mt-4 pb-24">
         <div className="max-w-6xl mx-auto px-6 text-center text-sm text-[--color-text-muted]">
           <div className="mb-3 space-x-3 text-xs">
             <a href="/terms" className="underline hover:text-[#666]">이용약관</a>
