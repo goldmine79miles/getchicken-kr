@@ -351,7 +351,7 @@ export default function GameClient() {
           )}
 
           {/* 메인 카드 */}
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-[--color-border] mb-5">
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-[--color-border] mb-5 overflow-hidden">
             {/* 튀김통 + 튀기는 속도 (g/hr) */}
             <div className="flex justify-between items-center mb-4">
               <div>
