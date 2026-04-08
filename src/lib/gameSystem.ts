@@ -1,6 +1,6 @@
 /**
  * 치킨준닭 게임 시스템
- * - 바구니 시스템 (금모으기 스타일)
+ * - 튀김통 시스템 (금모으기 스타일)
  * - 속도 % 누적/감소
  * - 3-layer 저장: localStorage + backup + IndexedDB
  */
@@ -195,9 +195,9 @@ export function getCurrentSpeed(state: GameState): number {
   return GAME_CONSTANTS.BASE_SPEED * (state.speedPercent / 100);
 }
 
-// ─── 바구니 시스템 ───
+// ─── 튀김통 시스템 ───
 
-/** 바구니에 추가 (최대까지만) - 실제 적립된 양 반환 */
+/** 튀김통에 추가 (최대까지만) - 실제 적립된 양 반환 */
 function addToCapacity(state: GameState, amount: number): number {
   const space = state.maxCapacity - state.currentCapacity;
   const actual = Math.min(amount, space);
@@ -205,7 +205,7 @@ function addToCapacity(state: GameState, amount: number): number {
   return actual;
 }
 
-/** 바구니이 꽉 찼는지 */
+/** 튀김통이 꽉 찼는지 */
 export function isCapacityFull(state: GameState): boolean {
   return state.currentCapacity >= state.maxCapacity - 0.001;
 }
@@ -229,7 +229,7 @@ export function applyOfflineGain(state: GameState): { state: GameState; gained: 
 
   const newState = { ...state, parts: { ...state.parts } };
   applySpeedDecay(newState);
-  // 오프라인 적립은 바구니으로 들어감
+  // 오프라인 적립은 튀김통으로 들어감
   const actual = addToCapacity(newState, gained);
   newState.totalCollected += actual;
   newState.lastCollectTime = Date.now();
@@ -242,7 +242,7 @@ function randomTapRound(): number {
   return GAME_CONSTANTS.TAPS_MIN + Math.floor(Math.random() * (GAME_CONSTANTS.TAPS_MAX - GAME_CONSTANTS.TAPS_MIN + 1));
 }
 
-/** 탭 적립 - X번 탭하면 바구니 가득 참 */
+/** 탭 적립 - X번 탭하면 튀김통 가득 참 */
 export function applyTap(state: GameState): GameState {
   if (isCapacityFull(state)) return state;
   if (state.tapsRemaining <= 0) return state;
@@ -266,9 +266,22 @@ export function applyTap(state: GameState): GameState {
   return newState;
 }
 
+/** 탭 충전 (광고 시청) - 탭 소진 시 새 라운드 + 3P */
+export function refillTaps(state: GameState): GameState {
+  if (state.tapsRemaining > 0) return state;
+  const newState = {
+    ...state,
+    tapsRemaining: randomTapRound(),
+    totalAdsWatched: state.totalAdsWatched + 1,
+    convertedPoints: state.convertedPoints + GAME_CONSTANTS.POINTS_PER_TAP_REFILL,
+  };
+  saveGameState(newState);
+  return newState;
+}
+
 /** 실시간 idle 틱 (1초마다 호출) */
 export function applyTick(state: GameState): GameState {
-  if (isCapacityFull(state)) return state; // 바구니 꽉 참
+  if (isCapacityFull(state)) return state; // 튀김통 꽉 참
 
   const newState = { ...state, lastCollectTime: Date.now() };
   applySpeedDecay(newState);
@@ -279,7 +292,7 @@ export function applyTick(state: GameState): GameState {
   return newState;
 }
 
-/** 포장하기 (광고 시청) - 바구니를 activePart에 적립 + 바구니 리셋 */
+/** 포장하기 (광고 시청) - 튀김통을 activePart에 적립 + 튀김통 리셋 */
 export function packageCapacity(state: GameState): GameState {
   if (state.currentCapacity < GAME_CONSTANTS.MIN_PACKAGE_AMOUNT) return state;
 
@@ -287,12 +300,13 @@ export function packageCapacity(state: GameState): GameState {
     ...state,
     parts: { ...state.parts },
     totalAdsWatched: state.totalAdsWatched + 1,
+    convertedPoints: state.convertedPoints + GAME_CONSTANTS.POINTS_PER_PACKAGE,
   };
 
-  // 바구니을 activePart에 적립
+  // 튀김통을 activePart에 적립
   distributeToActivePart(newState, newState.currentCapacity);
 
-  // 바구니 리셋 + 새 라운드 탭 수 (용량 고정)
+  // 튀김통 리셋 + 새 라운드 탭 수 (용량 고정)
   newState.currentCapacity = 0;
   newState.tapsRemaining = randomTapRound();
 
@@ -317,7 +331,7 @@ export function packageCapacity(state: GameState): GameState {
   return newState;
 }
 
-/** 광고로 속도 부스트 (+100%) */
+/** 광고로 속도 부스트 (+100%) + 3P */
 export function applySpeedBoost(state: GameState): GameState {
   const newState = {
     ...state,
@@ -327,6 +341,7 @@ export function applySpeedBoost(state: GameState): GameState {
     ),
     lastSpeedUpdate: Date.now(),
     totalAdsWatched: state.totalAdsWatched + 1,
+    convertedPoints: state.convertedPoints + GAME_CONSTANTS.POINTS_PER_SPEED_BOOST,
   };
   saveGameState(newState);
   return newState;

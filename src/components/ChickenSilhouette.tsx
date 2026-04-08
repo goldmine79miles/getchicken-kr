@@ -6,11 +6,11 @@ import { PART_ORDER } from "@/types/game";
 interface Props {
   gameState: GameState;
   chickenColor: string;
-  capacityPercent: number; // 바구니 채움 비율 (0~100)
+  capacityPercent: number; // 튀김통 채움 비율 (0~100)
   onTap: () => void;
 }
 
-/** 바구니 채움률에 따라 노릇해지는 색상 (매 사이클마다 반복) */
+/** 튀김통 채움률에 따라 노릇해지는 색상 (매 사이클마다 반복) */
 function getFryColor(capacityPercent: number): string {
   // 0%: 희미한 연노랑 → 50%: 골드 → 100%: 골든브라운
   const stops = [
@@ -40,7 +40,7 @@ export default function ChickenSilhouette({ gameState, capacityPercent, onTap }:
   const totalCurrent = PART_ORDER.reduce((sum, id) => sum + gameState.parts[id].current, 0);
   const overallProgress = totalRequired > 0 ? (totalCurrent / totalRequired) * 100 : 0;
 
-  // 바구니 기준 튀김 색상 (매 사이클 반복)
+  // 튀김통 기준 튀김 색상 (매 사이클 반복)
   const fryColor = getFryColor(capacityPercent);
   // 전체 진행률 기준 크리스피 강도 (0~1)
   const crispiness = overallProgress / 100;
@@ -68,7 +68,7 @@ export default function ChickenSilhouette({ gameState, capacityPercent, onTap }:
         {/* 기본 배경: 희미한 연노랑 (기름에 넣은 느낌) */}
         <div className="absolute inset-0" style={{ backgroundColor: "#FFF8DC" }} />
 
-        {/* 아래에서 위로 차오르는 튀김 색상 (바구니 기준) */}
+        {/* 아래에서 위로 차오르는 튀김 색상 (튀김통 기준) */}
         <div
           className="absolute inset-x-0 bottom-0 transition-all duration-500 ease-out"
           style={{
@@ -103,7 +103,7 @@ export default function ChickenSilhouette({ gameState, capacityPercent, onTap }:
         }}
       />
 
-      {/* 김/연기 효과 (바구니 30% 이상일 때) */}
+      {/* 김/연기 효과 (튀김통 30% 이상일 때) */}
       {capacityPercent > 30 && (
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none"

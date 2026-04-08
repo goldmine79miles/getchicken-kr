@@ -27,16 +27,16 @@ export interface GameState {
   parts: Record<PartId, PartState>;   // 부위별 상태
   totalCollected: number;             // 총 모은 양 (g)
   lastCollectTime: number;            // 마지막 적립 시간 (idle 계산)
-  // 바구니 시스템 (튀김 바구니)
-  currentCapacity: number;            // 바구니에 담긴 양 (0 ~ maxCapacity)
-  maxCapacity: number;                // 바구니 최대 용량
+  // 튀김통 시스템
+  currentCapacity: number;            // 튀김통에 담긴 양 (0 ~ maxCapacity)
+  maxCapacity: number;                // 튀김통 최대 용량
   // 속도 시스템 (% 단위, 누적/감소)
   speedPercent: number;               // 현재 속도 (100 = 기본)
   lastSpeedUpdate: number;            // 마지막 속도 업데이트 시간
   // 알림
   notificationEnabled: boolean;       // 알림 설정 여부
-  // 탭 제한 시스템
-  tapsRemaining: number;              // 남은 탭 수 (0이면 광고 필요)
+  // 탭 제한 (숨겨진 카운터, 소진 시 광고)
+  tapsRemaining: number;
   // 기타
   completedChickens: CompletedChicken[];
   convertedPoints: number;            // 전환한 총 포인트
@@ -84,15 +84,13 @@ export const PART_ORDER: PartId[] = [
 /** 경제 상수 */
 export const GAME_CONSTANTS = {
   BASE_SPEED: 0.003,              // idle 0.003g/s (시간당 10.8g)
-  TAP_AMOUNT: 0.1,                // 탭 1회 = 0.1g
+  TAP_AMOUNT: 0.07,               // 탭 1회 = 0.07g (~7탭이면 튀김통 가득)
   MAX_OFFLINE_HOURS: 8,           // 오프라인 최대 8시간
   POINTS_PER_PART: 50,            // 부위 1개 = 50P
   POINTS_FULL_BONUS: 200,         // 한마리 완성 보너스 = 200P (총 500P)
-  // 바구니 시스템 (금모으기 비례)
-  INITIAL_MAX_CAPACITY: 2.0,      // 초기 바구니 용량 2g (~43원 어치)
-  CAPACITY_UPGRADE_PER_AD: 0.5,   // 포장 1회당 바구니 +0.5g
-  MAX_CAPACITY_LIMIT: 20.0,       // 바구니 최대 상한 20g
-  MIN_PACKAGE_AMOUNT: 0.5,        // 최소 포장 가능량 0.5g (~10원 어치)
+  // 튀김통 시스템 (용량 고정, 속도만 변동)
+  INITIAL_MAX_CAPACITY: 0.5,      // 튀김통 0.5g (고정, 1회 ~10원 = 금모으기 동일)
+  MIN_PACKAGE_AMOUNT: 0.2,        // 최소 포장 가능량 0.2g
   // 탭 제한 (랜덤)
   TAPS_MIN: 5,                      // 최소 탭 수
   TAPS_MAX: 10,                     // 최대 탭 수
@@ -101,4 +99,8 @@ export const GAME_CONSTANTS = {
   SPEED_DECAY_PER_HOUR: 50,       // 시간당 -50% 감소
   MIN_SPEED_PERCENT: 100,         // 최소 속도 100%
   MAX_SPEED_PERCENT: 5000,        // 최대 속도 5000%
+  // 토스포인트 (광고 시청 보상)
+  POINTS_PER_PACKAGE: 5,          // 포장 광고 = 5P
+  POINTS_PER_TAP_REFILL: 3,      // 탭 충전 광고 = 3P
+  POINTS_PER_SPEED_BOOST: 3,     // 속도 부스트 광고 = 3P
 };

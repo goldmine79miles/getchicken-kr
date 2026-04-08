@@ -17,6 +17,7 @@ import {
   getTotalProgress,
   isCapacityFull,
   getCurrentSpeed,
+  refillTaps,
 } from "@/lib/gameSystem";
 import ChickenSilhouette from "./ChickenSilhouette";
 import BrandCard from "./BrandCard";
@@ -71,10 +72,15 @@ export default function GameClient() {
     setGameState((prev) => (prev ? applySpeedBoost(prev) : prev));
   }, []);
 
+  const handleRefillTaps = useCallback(() => {
+    setGameState((prev) => (prev ? refillTaps(prev) : prev));
+  }, []);
+
 
 
   const handleGoHome = useCallback(() => {
-    localStorage.removeItem("chickenGame");
+    localStorage.removeItem("chikin_game");
+    localStorage.removeItem("_ck_v2");
     setGameState(null);
     setSelectedBrand(null);
   }, []);
@@ -283,11 +289,11 @@ export default function GameClient() {
 
           {/* 메인 카드 */}
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-[--color-border] mb-5">
-            {/* 튀김 바구니 + 튀기는 속도 (g/hr) */}
+            {/* 튀김통 + 튀기는 속도 (g/hr) */}
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#FFF3E0] text-[#E65100]">튀김 바구니</span>
-                <span className="text-sm font-bold">{gameState.currentCapacity.toFixed(1)}g / {gameState.maxCapacity.toFixed(0)}g</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#FFF3E0] text-[#E65100]">튀김통</span>
+                <span className="text-sm font-bold">{gameState.currentCapacity.toFixed(1)}g / {gameState.maxCapacity.toFixed(1)}g</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#E3F2FD] text-[#1565C0]">속도</span>
@@ -295,7 +301,7 @@ export default function GameClient() {
               </div>
             </div>
 
-            {/* 바구니 바 */}
+            {/* 튀김통 바 */}
             <div className="h-2 bg-[#f0f0f0] rounded-full overflow-hidden mb-5">
               <div
                 className="h-full rounded-full transition-all duration-300"
@@ -318,14 +324,30 @@ export default function GameClient() {
 
             {/* 카피 */}
             <div className="text-center mt-3">
-              {capacityFull || gameState.tapsRemaining <= 0 ? (
-                <span className="text-sm font-bold text-red-500">치킨이 튀겨졌어요! 상자에 담아주세요</span>
+              {capacityFull ? (
+                <span className="text-sm font-bold text-red-500">튀김통이 가득 찼어요! 상자에 담아주세요</span>
+              ) : gameState.tapsRemaining <= 0 ? (
+                <span className="text-sm font-bold text-orange-500">탭 소진! 광고 보고 다시 튀기기</span>
               ) : (
                 <span className="text-sm font-bold text-[--color-text-muted]">
                   🤚 치킨을 {gameState.tapsRemaining}번 눌러주세요
                 </span>
               )}
             </div>
+
+            {/* 탭 소진 광고 버튼 */}
+            {!capacityFull && gameState.tapsRemaining <= 0 && (
+              <button
+                onClick={handleRefillTaps}
+                className="w-full mt-3 py-3 rounded-2xl text-sm font-bold text-white shadow-md hover:shadow-lg transition-all relative"
+                style={{ background: `linear-gradient(135deg, ${brand.color}, ${brand.color}cc)` }}
+              >
+                👆 광고 보고 다시 튀기기
+                <span className="absolute -top-1.5 -right-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md text-white bg-red-500">
+                  AD
+                </span>
+              </button>
+            )}
           </div>
 
           {/* 지금까지 튀긴 치킨 */}
@@ -358,8 +380,8 @@ export default function GameClient() {
             <span
               className="absolute -top-1.5 -right-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md text-white"
               style={{
-                background: capacityFull || gameState.tapsRemaining <= 0 ? brand.color : "#aaa",
-                animation: capacityFull || gameState.tapsRemaining <= 0 ? "pulse 2s infinite" : "none",
+                background: capacityFull ? brand.color : "#aaa",
+                animation: capacityFull ? "pulse 2s infinite" : "none",
               }}
             >
               AD
