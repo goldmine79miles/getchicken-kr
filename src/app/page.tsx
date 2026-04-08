@@ -8,19 +8,17 @@ export default function Home() {
       </main>
 
       {/* 푸터 */}
-      <footer className="bg-white border-t border-[--color-border] py-6 mt-4 pb-24">
-        <div className="max-w-6xl mx-auto px-6 text-center text-sm text-[--color-text-muted]">
-          <div className="mb-3 space-x-3 text-xs">
-            <a href="/terms" className="underline hover:text-[#666]">이용약관</a>
-            <span>|</span>
-            <a href="/privacy" className="underline hover:text-[#666]">개인정보처리방침</a>
-            <span>|</span>
-            <a href="/marketing" className="underline hover:text-[#666]">마케팅 정보 수신</a>
-          </div>
-          <p className="mb-2">© 2026 치킨준닭. All rights reserved.</p>
-          <p className="text-xs">본 서비스에 등장하는 브랜드 이름은 밈 네이밍이며 실제 브랜드와 무관합니다.</p>
-          <p className="text-xs mt-1">문의: getchikn@gmail.com</p>
+      <footer className="py-6 mt-4 pb-24 text-center">
+        <div className="flex justify-center gap-3 flex-wrap text-[10px] text-[#8b95a1]">
+          <a href="/terms" className="hover:text-[#666] transition-colors">이용약관</a>
+          <span>|</span>
+          <a href="/privacy" className="hover:text-[#666] transition-colors">개인정보처리방침</a>
+          <span>|</span>
+          <a href="/marketing" className="hover:text-[#666] transition-colors">마케팅 정보 수신</a>
+          <span>|</span>
+          <a href="/business" className="hover:text-[#666] transition-colors">사업자 정보</a>
         </div>
+        <p className="text-[#8b95a1]/50 text-[9px] mt-2">getchikn@gmail.com</p>
       </footer>
     </>
   );
