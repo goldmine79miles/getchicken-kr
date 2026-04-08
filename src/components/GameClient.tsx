@@ -135,11 +135,15 @@ export default function GameClient() {
               {[
                 { step: "1", emoji: "🏷️", title: "브랜드 선택", desc: "18개 브랜드 중 하나를 골라요" },
                 { step: "2", emoji: "👆", title: "치킨 튀기기", desc: "치킨을 눌러서 튀겨요" },
-                { step: "3", emoji: "📦", title: "포장하기", desc: "바구니가 차면 포장해요" },
+                { step: "3", emoji: "box", title: "포장하기", desc: "바구니가 차면 치킨 상자에 담아요" },
                 { step: "4", emoji: "🍗", title: "치킨 완성", desc: "1,000g 모으면 한마리 완성!" },
               ].map((item) => (
                 <div key={item.step} className="bg-[--color-bg] rounded-2xl p-6">
-                  <div className="text-4xl mb-3">{item.emoji}</div>
+                  <div className="text-4xl mb-3">
+                    {item.emoji === "box" ? (
+                      <img src="/chicken-box.png" alt="치킨상자" className="w-10 h-10 object-contain mx-auto" />
+                    ) : item.emoji}
+                  </div>
                   <div className="text-xs font-bold text-[--color-chicken] mb-1">STEP {item.step}</div>
                   <div className="text-base font-extrabold mb-1">{item.title}</div>
                   <div className="text-sm text-[--color-text-muted]">{item.desc}</div>
