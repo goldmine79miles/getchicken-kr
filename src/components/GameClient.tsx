@@ -173,6 +173,18 @@ export default function GameClient() {
                   onClick={() => setSelectedBrand(brand.id)}
                 />
               ))}
+              {/* Coming Soon 빈 카드 */}
+              {[1, 2].map((i) => (
+                <div
+                  key={`coming-${i}`}
+                  className="relative p-4 rounded-2xl text-center border-2 border-dashed border-[#e0e0e0] flex flex-col items-center justify-center"
+                  style={{ minHeight: 160 }}
+                >
+                  <div className="text-3xl mb-2 opacity-30">🍗</div>
+                  <div className="text-sm font-bold text-[--color-text-muted]">Next Brand ?</div>
+                  <div className="text-[11px] text-[--color-text-muted] mt-1">Coming Soon</div>
+                </div>
+              ))}
             </div>
             <div className="text-center">
               <button
