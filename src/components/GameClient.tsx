@@ -353,13 +353,13 @@ export default function GameClient() {
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-[--color-border] mb-5">
             {/* 튀김통 + 튀기는 속도 (g/hr) */}
             <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#FFF3E0] text-[#E65100]">튀김통</span>
-                <span className="text-sm font-bold">{gameState.currentCapacity.toFixed(1)}g / {gameState.maxCapacity.toFixed(1)}g</span>
+              <div>
+                <div className="text-[10px] font-bold text-[#E65100] mb-0.5">튀김통 최대 용량</div>
+                <div className="text-lg font-extrabold">{gameState.maxCapacity.toFixed(1)}g</div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#E3F2FD] text-[#1565C0]">속도</span>
-                <span className="text-sm font-bold">{(getCurrentSpeed(gameState) * 3600).toFixed(1)}g/hr</span>
+              <div className="text-right">
+                <div className="text-[10px] font-bold text-[#1565C0] mb-0.5">튀기는 속도</div>
+                <div className="text-lg font-extrabold">{(getCurrentSpeed(gameState) * 3600).toFixed(1)}g/hr</div>
               </div>
             </div>
 
@@ -389,7 +389,7 @@ export default function GameClient() {
               {capacityFull ? (
                 <span className="text-sm font-bold text-red-500">튀김통이 가득 찼어요! 포장하면 더 튀길 수 있어요</span>
               ) : gameState.tapsRemaining <= 0 ? (
-                <span className="text-sm font-bold text-orange-500">탭 소진! 광고 보고 다시 튀기기</span>
+                <span className="text-sm font-bold text-orange-500">광고 보고 더 튀기기</span>
               ) : (
                 <span className="text-sm font-bold text-[--color-text-muted]">
                   🤚 치킨을 {gameState.tapsRemaining}번 눌러주세요

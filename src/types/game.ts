@@ -84,16 +84,16 @@ export const PART_ORDER: PartId[] = [
 /** 경제 상수 */
 export const GAME_CONSTANTS = {
   BASE_SPEED: 0.003,              // idle 0.003g/s (시간당 10.8g)
-  TAP_AMOUNT: 0.01,               // 탭 1회 = 0.01g (미끼용, 튀김통은 주로 idle로 참)
+  TAP_AMOUNT: 0.07,               // 탭 1회 = 0.07g (0.5g / 0.07 ≈ 7탭이면 가득)
   MAX_OFFLINE_HOURS: 8,           // 오프라인 최대 8시간
   POINTS_PER_PART: 50,            // 부위 1개 = 50P
   POINTS_FULL_BONUS: 200,         // 한마리 완성 보너스 = 200P (총 500P)
   // 튀김통 시스템 (용량 고정, 속도만 변동)
   INITIAL_MAX_CAPACITY: 0.5,      // 튀김통 0.5g (고정, 1회 ~10원 = 금모으기 동일)
   MIN_PACKAGE_AMOUNT: 0.01,       // 최소 포장 가능량 0.01g (소량이라도 옮기기 가능)
-  // 탭 제한 (랜덤)
-  TAPS_MIN: 15,                     // 최소 탭 수
-  TAPS_MAX: 30,                     // 최대 탭 수
+  // 탭 제한 (랜덤) - 미끼: 다 쓰면 광고 봐야 다시 탭 가능
+  TAPS_MIN: 5,                      // 최소 탭 수
+  TAPS_MAX: 10,                     // 최대 탭 수
   // 속도 시스템 (% 단위)
   SPEED_BOOST_PER_AD: 100,        // 광고 1회당 +100%
   SPEED_DECAY_PER_HOUR: 50,       // 시간당 -50% 감소
