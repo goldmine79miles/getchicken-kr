@@ -242,9 +242,8 @@ function randomTapRound(): number {
   return GAME_CONSTANTS.TAPS_MIN + Math.floor(Math.random() * (GAME_CONSTANTS.TAPS_MAX - GAME_CONSTANTS.TAPS_MIN + 1));
 }
 
-/** 탭 적립 - X번 탭하면 튀김통 가득 참 */
+/** 탭 - 속도 일시 부스트 (탭은 미끼, 튀김통은 idle로 참) */
 export function applyTap(state: GameState): GameState {
-  if (isCapacityFull(state)) return state;
   if (state.tapsRemaining <= 0) return state;
 
   const newState = {
@@ -254,14 +253,12 @@ export function applyTap(state: GameState): GameState {
     lastCollectTime: Date.now(),
   };
 
-  // 탭당 적립량 = 남은 용량 / 남은 탭수 (마지막 탭이면 꽉 참)
-  const remaining = newState.maxCapacity - newState.currentCapacity;
-  const tapAmount = newState.tapsRemaining === 0
-    ? remaining  // 마지막 탭: 나머지 전부 채움
-    : Math.min(GAME_CONSTANTS.TAP_AMOUNT, remaining);
+  // 탭 1회 = 소량 직접 적립 (미끼용)
+  if (!isCapacityFull(newState)) {
+    const actual = addToCapacity(newState, GAME_CONSTANTS.TAP_AMOUNT);
+    newState.totalCollected += actual;
+  }
 
-  const actual = addToCapacity(newState, tapAmount);
-  newState.totalCollected += actual;
   saveGameState(newState);
   return newState;
 }

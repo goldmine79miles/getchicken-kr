@@ -84,7 +84,7 @@ export const PART_ORDER: PartId[] = [
 /** 경제 상수 */
 export const GAME_CONSTANTS = {
   BASE_SPEED: 0.003,              // idle 0.003g/s (시간당 10.8g)
-  TAP_AMOUNT: 0.07,               // 탭 1회 = 0.07g (~7탭이면 튀김통 가득)
+  TAP_AMOUNT: 0.01,               // 탭 1회 = 0.01g (미끼용, 튀김통은 주로 idle로 참)
   MAX_OFFLINE_HOURS: 8,           // 오프라인 최대 8시간
   POINTS_PER_PART: 50,            // 부위 1개 = 50P
   POINTS_FULL_BONUS: 200,         // 한마리 완성 보너스 = 200P (총 500P)
