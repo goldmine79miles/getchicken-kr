@@ -447,7 +447,7 @@ export default function GameClient() {
 
           {/* 튀김통 오도미터 */}
           <div className="text-center mb-5">
-            <div className="text-sm font-bold text-[--color-text-muted] mb-2">튀김통</div>
+            <div className="text-sm font-bold text-[--color-text-muted] mb-2">지금까지 튀겨진 {brand.real} {brand.realMenu}</div>
             <div className="flex items-center justify-center bg-[#1a1a1a] rounded-2xl px-3 py-3 shadow-inner overflow-hidden">
               {(() => {
                 const total = counterDisplay;
