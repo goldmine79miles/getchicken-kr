@@ -137,7 +137,7 @@ export default function GameClient() {
               {[
                 { step: "1", emoji: "🏷️", title: "브랜드 선택", desc: "16개 브랜드 중 하나를 골라요" },
                 { step: "2", emoji: "👆", title: "터치로 적립", desc: "치킨을 터치하거나 자동으로 모여요" },
-                { step: "3", emoji: "📦", title: "부위별 포장", desc: "6부위를 다 모으면 한마리 완성!" },
+                { step: "3", emoji: "🥡", title: "부위별 포장", desc: "6부위를 다 모으면 한마리 완성!" },
                 { step: "4", emoji: "🍗", title: "치킨 받기", desc: "완성하면 진짜 치킨이 온다!" },
               ].map((item) => (
                 <div key={item.step} className="bg-[--color-bg] rounded-2xl p-6">
