@@ -84,11 +84,12 @@ export default function GameClient() {
 
       const speed = getCurrentSpeed(gs);
       const isFull = gs.currentCapacity >= gs.maxCapacity - 0.001;
-      const totalParts = PART_ORDER.reduce((sum, id) => sum + gs.parts[id].current, 0);
-      const base = totalParts + gs.currentCapacity;
+      const base = gs.currentCapacity; // 튀김통만 (포장하면 0으로 리셋)
 
-      // 실제값보다 뒤처져있으면 동기화, 아니면 보간
-      if (smoothRef.current < base - 0.001) {
+      // 포장으로 리셋되면 즉시 동기화, 아니면 보간
+      if (smoothRef.current > base + 0.01) {
+        smoothRef.current = base; // 포장 후 리셋
+      } else if (smoothRef.current < base - 0.001) {
         smoothRef.current = base;
       } else if (!isFull && dt < 0.5) {
         smoothRef.current += speed * dt;
@@ -400,7 +401,7 @@ export default function GameClient() {
 
           {/* 지금까지 튀긴 치킨 - 오도미터 스타일 */}
           <div className="text-center mb-5">
-            <div className="text-sm font-bold text-[--color-text-muted] mb-2">지금까지 튀긴 치킨</div>
+            <div className="text-sm font-bold text-[--color-text-muted] mb-2">튀김통</div>
             <div className="flex items-end justify-center bg-[#1a1a1a] rounded-2xl px-4 py-4 shadow-inner w-full">
               {(() => {
                 const total = counterDisplay;
@@ -478,9 +479,18 @@ export default function GameClient() {
             </button>
           </div>
 
-          {/* 통계 */}
-          <div className="text-center text-[11px] text-[--color-text-muted]">
-            완성 치킨 {gameState.completedChickens.length}마리 · 총 탭 {gameState.totalTaps.toLocaleString()}회
+          {/* 포장 완료 총량 (금모으기 하단 "금 X모았어요" 스타일) */}
+          <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-[--color-border] shadow-sm">
+            <img src="/chicken-box.png" alt="" className="w-10 h-10 object-contain mix-blend-multiply shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-extrabold">
+                치킨 <span style={{ color: brand.color }}>{totalCurrent.toFixed(1)}g</span> 포장했어요
+              </div>
+              <div className="text-[11px] text-[--color-text-muted]">
+                1,000g 모으면 한마리 완성 · {(totalCurrent / 10).toFixed(1)}% 달성
+              </div>
+            </div>
+            <span className="text-lg">›</span>
           </div>
         </>
       )}
