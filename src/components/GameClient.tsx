@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { GameState, PartId } from "@/types/game";
 import { GAME_CONSTANTS } from "@/types/game";
-import { BRANDS, getBrand, getAverageChickenPrice } from "@/lib/brands";
+import { BRANDS, getBrand, getAverageChickenPrice, BRAND_PRICES } from "@/lib/brands";
 import {
   loadGameState,
   restoreFromIDB,
@@ -276,24 +276,31 @@ export default function GameClient() {
             <h3 className="text-lg font-extrabold">브랜드 변경</h3>
             <button onClick={() => setShowBrandPicker(false)} className="text-[--color-text-muted] hover:text-[--color-text-primary] text-xl">✕</button>
           </div>
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {BRANDS.map((b) => (
-              <button
-                key={b.id}
-                onClick={() => {
-                  setGameState(changeBrand(gameState, b.id));
-                  setShowBrandPicker(false);
-                }}
-                className="p-3 rounded-xl text-center transition-all hover:shadow-md"
-                style={{
-                  border: gameState.selectedBrand === b.id ? `2px solid ${b.color}` : "2px solid transparent",
-                  backgroundColor: gameState.selectedBrand === b.id ? `${b.color}08` : "#fafafa",
-                }}
-              >
-                <div className="text-2xl mb-1">{b.emoji}</div>
-                <div className="text-xs font-bold">{b.meme}</div>
-              </button>
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {BRANDS.map((b) => {
+              const price = BRAND_PRICES[b.id] || 0;
+              return (
+                <button
+                  key={b.id}
+                  onClick={() => {
+                    setGameState(changeBrand(gameState, b.id));
+                    setShowBrandPicker(false);
+                  }}
+                  className="p-4 rounded-xl text-left transition-all hover:shadow-md"
+                  style={{
+                    border: gameState.selectedBrand === b.id ? `2px solid ${b.color}` : "2px solid #f0f0f0",
+                    backgroundColor: gameState.selectedBrand === b.id ? `${b.color}08` : "#fafafa",
+                  }}
+                >
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-xl">{b.emoji}</span>
+                    <span className="text-sm font-extrabold">{b.meme}</span>
+                  </div>
+                  <div className="text-xs font-bold" style={{ color: b.color }}>{b.menu}</div>
+                  <div className="text-xs text-[--color-text-muted] mt-0.5">{price.toLocaleString()}원</div>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -311,7 +318,7 @@ export default function GameClient() {
             </div>
 
             <div className="mt-3 text-sm font-bold" style={{ color: brand.color }}>
-              👆 치킨을 터치해서 모으기
+              👆 클릭해서 치킨 겟하자!
             </div>
 
             {/* 속도 표시 */}

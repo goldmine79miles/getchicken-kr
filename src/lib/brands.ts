@@ -190,12 +190,12 @@ export function getBrand(id: string): Brand | undefined {
 
 /** 브랜드별 평균 시중 가격 (원) - 정보 표시용 */
 export const BRAND_PRICES: Record<string, number> = {
-  bbq: 22000,
-  bhc: 20000,
-  kyochon: 21000,
-  goobne: 20000,
+  bbq: 23000,
+  bhc: 21000,
+  kyochon: 23000,
+  goobne: 19900,
   nene: 23000,
-  pelicana: 23000,
+  pelicana: 20000,
   puradak: 21900,
   hosigi: 17500,
   mexicana: 21000,
