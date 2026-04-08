@@ -554,7 +554,10 @@ export default function GameClient() {
           </div>
 
           {/* 포장 완료 총량 (금모으기 하단 스타일) */}
-          <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-[--color-border] shadow-sm">
+          <div
+            onClick={() => setTab("mychicken")}
+            className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-[--color-border] shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
+          >
             <img src="/chicken-box.png" alt="" className="w-12 h-12 object-contain mix-blend-multiply shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-extrabold">
