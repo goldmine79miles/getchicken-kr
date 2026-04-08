@@ -347,7 +347,7 @@ export default function GameClient() {
             <img src="/chicken-box.png" alt="치킨상자" className="w-8 h-8 object-contain" />
             <div className="text-left">
               <span className="text-sm font-bold block">포장하기</span>
-              <span className="text-[10px] text-[--color-text-muted]">바구니 비우고 치킨에 담기</span>
+              <span className="text-[10px] text-[--color-text-muted]">치킨 상자에 담기</span>
             </div>
             {capacityFull && (
               <span className="absolute -top-1.5 -right-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md text-white animate-pulse" style={{ background: brand.color }}>
