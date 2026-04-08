@@ -61,31 +61,52 @@ export default function GameClient() {
     return () => { if (tickRef.current) clearInterval(tickRef.current); };
   }, [gameState?.selectedBrand]);
 
+  // gameState를 ref로 추적 (애니메이션에서 최신값 읽기 위해)
+  const gameStateRef = useRef(gameState);
+  gameStateRef.current = gameState;
+
+  // 카운터 표시용 (실제값 + 코스메틱 마지막 4자리)
+  const [counterDisplay, setCounterDisplay] = useState("0.0000000000");
+
   // 부드러운 카운터 애니메이션 (매 프레임 보간)
   useEffect(() => {
-    if (!gameState) return;
     let animId: number;
     let running = true;
-    const speedRef = { current: getCurrentSpeed(gameState) };
-    const fullRef = { current: isCapacityFull(gameState) };
-    const totalParts = PART_ORDER.reduce((sum, id) => sum + gameState.parts[id].current, 0);
-    smoothRef.current = totalParts + gameState.currentCapacity;
-    lastTimeRef.current = performance.now();
 
     const animate = () => {
       if (!running) return;
+      const gs = gameStateRef.current;
+      if (!gs) { animId = requestAnimationFrame(animate); return; }
+
       const now = performance.now();
       const dt = (now - lastTimeRef.current) / 1000;
       lastTimeRef.current = now;
-      if (!fullRef.current && dt < 1) {
-        smoothRef.current += speedRef.current * dt;
+
+      const speed = getCurrentSpeed(gs);
+      const isFull = gs.currentCapacity >= gs.maxCapacity - 0.001;
+      const totalParts = PART_ORDER.reduce((sum, id) => sum + gs.parts[id].current, 0);
+      const base = totalParts + gs.currentCapacity;
+
+      // 실제값보다 뒤처져있으면 동기화, 아니면 보간
+      if (smoothRef.current < base - 0.001) {
+        smoothRef.current = base;
+      } else if (!isFull && dt < 0.5) {
+        smoothRef.current += speed * dt;
       }
-      setSmoothTotal(smoothRef.current);
+
+      // 실제 정밀도 6자리 + 코스메틱 마지막 4자리 (항상 스피닝)
+      const realPart = smoothRef.current.toFixed(6);
+      const micro = Math.floor(now * 7.77) % 10000;
+      const display = realPart + micro.toString().padStart(4, "0");
+      setCounterDisplay(display);
+
       animId = requestAnimationFrame(animate);
     };
+
+    lastTimeRef.current = performance.now();
     animId = requestAnimationFrame(animate);
     return () => { running = false; cancelAnimationFrame(animId); };
-  }, [gameState]);
+  }, []); // 한번만 시작, ref로 최신 state 읽음
 
   const handleTap = useCallback(() => {
     setGameState((prev) => (prev ? applyTap(prev) : prev));
@@ -382,7 +403,7 @@ export default function GameClient() {
             <div className="text-sm font-bold text-[--color-text-muted] mb-2">지금까지 튀긴 치킨</div>
             <div className="flex items-end justify-center bg-[#1a1a1a] rounded-2xl px-4 py-4 shadow-inner w-full">
               {(() => {
-                const total = smoothTotal.toFixed(10);
+                const total = counterDisplay;
                 const [intPart, decPart] = total.split(".");
                 const chars = intPart + "." + decPart;
                 const intLen = intPart.length;

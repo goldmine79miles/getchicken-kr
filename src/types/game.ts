@@ -92,8 +92,8 @@ export const GAME_CONSTANTS = {
   INITIAL_MAX_CAPACITY: 0.5,      // 튀김통 0.5g (고정, 1회 ~10원 = 금모으기 동일)
   MIN_PACKAGE_AMOUNT: 0.2,        // 최소 포장 가능량 0.2g
   // 탭 제한 (랜덤)
-  TAPS_MIN: 5,                      // 최소 탭 수
-  TAPS_MAX: 10,                     // 최대 탭 수
+  TAPS_MIN: 15,                     // 최소 탭 수
+  TAPS_MAX: 30,                     // 최대 탭 수
   // 속도 시스템 (% 단위)
   SPEED_BOOST_PER_AD: 100,        // 광고 1회당 +100%
   SPEED_DECAY_PER_HOUR: 50,       // 시간당 -50% 감소
