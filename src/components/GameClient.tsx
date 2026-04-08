@@ -318,10 +318,7 @@ export default function GameClient() {
                   const price = BRAND_PRICES[b.id] || 0;
                   return (
                     <div key={b.id} className="flex items-center justify-between py-2 border-b border-[#f0f0f0] last:border-0">
-                      <div>
-                        <span className="text-sm font-bold">{b.real}</span>
-                        <span className="text-xs text-[--color-text-muted] ml-1.5">({b.meme})</span>
-                      </div>
+                      <span className="text-sm font-bold">{b.real}</span>
                       <span className="text-sm font-extrabold">{price.toLocaleString()}원</span>
                     </div>
                   );
@@ -524,15 +521,15 @@ export default function GameClient() {
             </button>
           </div>
 
-          {/* 포장 완료 총량 (금모으기 하단 "금 X모았어요" 스타일) */}
+          {/* 포장 완료 총량 (금모으기 하단 스타일) */}
           <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-[--color-border] shadow-sm">
             <img src="/chicken-box.png" alt="" className="w-10 h-10 object-contain mix-blend-multiply shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-extrabold">
-                치킨 <span style={{ color: brand.color }}>{totalCurrent.toFixed(1)}g</span> 포장했어요
+                치킨 <span style={{ color: brand.color }}>{Math.floor(totalCurrent)}/1000</span> 마리 포장했어요
               </div>
               <div className="text-[11px] text-[--color-text-muted]">
-                1,000g 모으면 한마리 완성 · {(totalCurrent / 10).toFixed(1)}% 달성
+                {totalCurrent.toFixed(1)}g 모음 · 1,000g이면 한마리 완성
               </div>
             </div>
             <span className="text-lg">›</span>
