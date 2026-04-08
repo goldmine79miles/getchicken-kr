@@ -6,21 +6,22 @@ import { PART_ORDER } from "@/types/game";
 interface Props {
   gameState: GameState;
   chickenColor: string;
+  capacityPercent: number; // 바구니 채움 비율 (0~100)
   onTap: () => void;
 }
 
-/** 진행률에 따라 노릇해지는 색상 */
-function getFryColor(progress: number): string {
-  // 0%: 회색(생닭) → 30%: 밀색 → 60%: 골든 → 90%: 진갈 → 100%: 바삭
+/** 바구니 채움률에 따라 노릇해지는 색상 (매 사이클마다 반복) */
+function getFryColor(capacityPercent: number): string {
+  // 0%: 희미한 연노랑 → 50%: 골드 → 100%: 골든브라운
   const stops = [
-    { at: 0, r: 224, g: 224, b: 224 },   // #e0e0e0 생닭
-    { at: 25, r: 245, g: 222, b: 179 },   // #F5DEB3 살짝 익음
-    { at: 50, r: 218, g: 165, b: 32 },    // #DAA520 노릇
-    { at: 75, r: 184, g: 134, b: 11 },    // #B8860B 진갈
-    { at: 100, r: 139, g: 69, b: 19 },    // #8B4513 바삭
+    { at: 0, r: 255, g: 248, b: 220 },   // #FFF8DC 코른실크 (기름에 넣은 직후)
+    { at: 30, r: 255, g: 223, b: 135 },   // 연한 골드
+    { at: 60, r: 255, g: 193, b: 37 },    // #FFC125 골드
+    { at: 85, r: 218, g: 165, b: 32 },    // #DAA520 골든로드
+    { at: 100, r: 184, g: 134, b: 11 },   // #B8860B 다크골든로드
   ];
 
-  const p = Math.max(0, Math.min(100, progress));
+  const p = Math.max(0, Math.min(100, capacityPercent));
   let i = 0;
   while (i < stops.length - 1 && stops[i + 1].at <= p) i++;
   if (i >= stops.length - 1) return `rgb(${stops[stops.length - 1].r},${stops[stops.length - 1].g},${stops[stops.length - 1].b})`;
@@ -34,11 +35,15 @@ function getFryColor(progress: number): string {
   return `rgb(${r},${g},${bl})`;
 }
 
-export default function ChickenSilhouette({ gameState, onTap }: Props) {
+export default function ChickenSilhouette({ gameState, capacityPercent, onTap }: Props) {
   const totalRequired = PART_ORDER.reduce((sum, id) => sum + gameState.parts[id].required, 0);
   const totalCurrent = PART_ORDER.reduce((sum, id) => sum + gameState.parts[id].current, 0);
-  const progress = totalRequired > 0 ? (totalCurrent / totalRequired) * 100 : 0;
-  const fryColor = getFryColor(progress);
+  const overallProgress = totalRequired > 0 ? (totalCurrent / totalRequired) * 100 : 0;
+
+  // 바구니 기준 튀김 색상 (매 사이클 반복)
+  const fryColor = getFryColor(capacityPercent);
+  // 전체 진행률 기준 크리스피 강도 (0~1)
+  const crispiness = overallProgress / 100;
 
   return (
     <div
@@ -60,35 +65,51 @@ export default function ChickenSilhouette({ gameState, onTap }: Props) {
           maskPosition: "center",
         } as React.CSSProperties}
       >
-        {/* 회색 빈 치킨 (배경) */}
-        <div className="absolute inset-0 bg-[#e0e0e0]" />
+        {/* 기본 배경: 희미한 연노랑 (기름에 넣은 느낌) */}
+        <div className="absolute inset-0" style={{ backgroundColor: "#FFF8DC" }} />
 
-        {/* 아래에서 위로 차오르는 컬러 (노릇해지기) */}
+        {/* 아래에서 위로 차오르는 튀김 색상 (바구니 기준) */}
         <div
-          className="absolute inset-x-0 bottom-0 transition-all duration-700 ease-out"
+          className="absolute inset-x-0 bottom-0 transition-all duration-500 ease-out"
           style={{
-            height: `${progress}%`,
-            background: `linear-gradient(to top, ${fryColor}, ${fryColor}dd)`,
+            height: `${Math.max(8, capacityPercent)}%`,
+            background: `linear-gradient(to top, ${fryColor}, ${fryColor}cc)`,
           }}
         />
+
+        {/* 크리스피 텍스처 오버레이 (전체 진행률 기준) */}
+        {crispiness > 0.15 && (
+          <div
+            className="absolute inset-0 transition-opacity duration-1000"
+            style={{
+              opacity: Math.min(0.4, crispiness * 0.5),
+              background: `radial-gradient(circle at 30% 40%, rgba(139,69,19,${crispiness * 0.3}) 0%, transparent 50%),
+                           radial-gradient(circle at 70% 60%, rgba(160,82,45,${crispiness * 0.25}) 0%, transparent 40%),
+                           radial-gradient(circle at 50% 30%, rgba(184,134,11,${crispiness * 0.2}) 0%, transparent 45%)`,
+            }}
+          />
+        )}
       </div>
 
-      {/* 치킨 외곽선 */}
+      {/* 치킨 외곽선 (진행률에 따라 진해짐) */}
       <img
         src="/chicken-clean.png"
         alt="치킨"
         draggable={false}
         className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-        style={{ opacity: 0.15, filter: "grayscale(1)" }}
+        style={{
+          opacity: 0.1 + crispiness * 0.15,
+          filter: crispiness > 0.5 ? `grayscale(${1 - crispiness}) sepia(${crispiness * 0.5})` : "grayscale(1)",
+        }}
       />
 
-      {/* 김 효과 */}
-      {progress > 30 && (
+      {/* 김/연기 효과 (바구니 30% 이상일 때) */}
+      {capacityPercent > 30 && (
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none"
           viewBox="0 0 220 220"
         >
-          <g opacity={Math.min(0.5, progress / 150)} stroke="#aaa" strokeWidth="2" fill="none" strokeLinecap="round">
+          <g opacity={Math.min(0.5, capacityPercent / 150)} stroke="#bbb" strokeWidth="1.5" fill="none" strokeLinecap="round">
             <path d="M80 70 Q78 55 81 40">
               <animate attributeName="d" values="M80 70 Q78 55 81 40;M80 70 Q82 55 79 40;M80 70 Q78 55 81 40" dur="2.5s" repeatCount="indefinite" />
             </path>

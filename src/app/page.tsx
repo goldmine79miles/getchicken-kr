@@ -3,21 +3,6 @@ import GameClient from "@/components/GameClient";
 export default function Home() {
   return (
     <>
-      {/* 헤더 */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-[--color-border]">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-            <span className="text-2xl">🍗</span>
-            <span className="text-xl font-extrabold tracking-tight">치킨준닭</span>
-          </a>
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-[--color-text-muted]">
-            <a href="#game" className="hover:text-[--color-text-primary] transition-colors">치킨모으기</a>
-            <a href="#brands" className="hover:text-[--color-text-primary] transition-colors">브랜드</a>
-            <a href="#how" className="hover:text-[--color-text-primary] transition-colors">이용방법</a>
-          </nav>
-        </div>
-      </header>
-
       <main>
         <GameClient />
       </main>

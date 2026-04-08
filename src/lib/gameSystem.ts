@@ -1,6 +1,6 @@
 /**
  * 치킨준닭 게임 시스템
- * - 적재량 시스템 (금모으기 스타일)
+ * - 바구니 시스템 (금모으기 스타일)
  * - 속도 % 누적/감소
  * - 3-layer 저장: localStorage + backup + IndexedDB
  */
@@ -193,9 +193,9 @@ export function getCurrentSpeed(state: GameState): number {
   return GAME_CONSTANTS.BASE_SPEED * (state.speedPercent / 100);
 }
 
-// ─── 적재량 시스템 ───
+// ─── 바구니 시스템 ───
 
-/** 적재량에 추가 (최대까지만) - 실제 적립된 양 반환 */
+/** 바구니에 추가 (최대까지만) - 실제 적립된 양 반환 */
 function addToCapacity(state: GameState, amount: number): number {
   const space = state.maxCapacity - state.currentCapacity;
   const actual = Math.min(amount, space);
@@ -203,7 +203,7 @@ function addToCapacity(state: GameState, amount: number): number {
   return actual;
 }
 
-/** 적재량이 꽉 찼는지 */
+/** 바구니이 꽉 찼는지 */
 export function isCapacityFull(state: GameState): boolean {
   return state.currentCapacity >= state.maxCapacity - 0.001;
 }
@@ -227,7 +227,7 @@ export function applyOfflineGain(state: GameState): { state: GameState; gained: 
 
   const newState = { ...state, parts: { ...state.parts } };
   applySpeedDecay(newState);
-  // 오프라인 적립은 적재량으로 들어감
+  // 오프라인 적립은 바구니으로 들어감
   const actual = addToCapacity(newState, gained);
   newState.totalCollected += actual;
   newState.lastCollectTime = Date.now();
@@ -237,7 +237,7 @@ export function applyOfflineGain(state: GameState): { state: GameState; gained: 
 
 /** 탭 적립 */
 export function applyTap(state: GameState): GameState {
-  if (isCapacityFull(state)) return state; // 적재량 꽉 참
+  if (isCapacityFull(state)) return state; // 바구니 꽉 참
 
   const newState = {
     ...state,
@@ -252,7 +252,7 @@ export function applyTap(state: GameState): GameState {
 
 /** 실시간 idle 틱 (1초마다 호출) */
 export function applyTick(state: GameState): GameState {
-  if (isCapacityFull(state)) return state; // 적재량 꽉 참
+  if (isCapacityFull(state)) return state; // 바구니 꽉 참
 
   const newState = { ...state, lastCollectTime: Date.now() };
   applySpeedDecay(newState);
@@ -273,10 +273,10 @@ export function packageCapacity(state: GameState): GameState {
     totalAdsWatched: state.totalAdsWatched + 1,
   };
 
-  // 적재량을 activePart에 적립
+  // 바구니을 activePart에 적립
   distributeToActivePart(newState, newState.currentCapacity);
 
-  // 적재량 리셋 + 최대 적재량 소폭 증가
+  // 바구니 리셋 + 최대 바구니 소폭 증가
   newState.currentCapacity = 0;
   newState.maxCapacity = Math.min(
     newState.maxCapacity + GAME_CONSTANTS.CAPACITY_UPGRADE_PER_AD,
