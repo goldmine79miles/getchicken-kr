@@ -32,6 +32,7 @@ export default function GameClient() {
   const [tapEffect, setTapEffect] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const [showBrandPicker, setShowBrandPicker] = useState(false);
+  const [showPriceList, setShowPriceList] = useState(false);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [smoothTotal, setSmoothTotal] = useState(0);
   const smoothRef = useRef<number>(0);
@@ -295,11 +296,41 @@ export default function GameClient() {
       {/* ─── 메인: 튀기기 탭 ─── */}
       {tab === "fry" && (
         <>
-          {/* 오늘의 치킨 평균 시세 */}
-          <div className="text-center mb-4">
+          {/* 오늘의 치킨 평균 시세 (클릭 → 브랜드별 정가) */}
+          <button
+            onClick={() => setShowPriceList(!showPriceList)}
+            className="w-full text-center mb-4 hover:opacity-80 transition-opacity"
+          >
             <div className="text-xs text-[--color-text-muted]">오늘의 치킨 평균 시세</div>
-            <div className="text-3xl font-extrabold">{avgPrice.toLocaleString()}원</div>
-          </div>
+            <div className="text-3xl font-extrabold">{avgPrice.toLocaleString()}원 <span className="text-sm text-[--color-text-muted]">▼</span></div>
+          </button>
+
+          {/* 브랜드별 정가 리스트 */}
+          {showPriceList && (
+            <div className="mb-5 bg-white rounded-2xl p-4 shadow-lg border border-[--color-border]">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-extrabold">브랜드별 치킨 정가</h3>
+                <button onClick={() => setShowPriceList(false)} className="text-[--color-text-muted] hover:text-[--color-text-primary] text-lg">✕</button>
+              </div>
+              <div className="max-h-[250px] overflow-y-auto">
+                {BRANDS.map((b) => {
+                  const price = BRAND_PRICES[b.id] || 0;
+                  return (
+                    <div key={b.id} className="flex items-center justify-between py-2 border-b border-[#f0f0f0] last:border-0">
+                      <div>
+                        <span className="text-sm font-bold">{b.real}</span>
+                        <span className="text-xs text-[--color-text-muted] ml-1.5">({b.meme})</span>
+                      </div>
+                      <span className="text-sm font-extrabold">{price.toLocaleString()}원</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="text-[10px] text-[--color-text-muted] mt-2 text-center">
+                평균 {avgPrice.toLocaleString()}원 · 대표 메뉴 기준
+              </div>
+            </div>
+          )}
 
           {/* 먹고 싶은 닭을 튀겨보세요 + 브랜드 드롭다운 */}
           <div className="text-center mb-5">
@@ -327,9 +358,7 @@ export default function GameClient() {
                 <button onClick={() => setShowBrandPicker(false)} className="text-[--color-text-muted] hover:text-[--color-text-primary] text-lg">✕</button>
               </div>
               <div className="grid grid-cols-2 gap-2.5 max-h-[300px] overflow-y-auto">
-                {BRANDS.map((b) => {
-                  const price = BRAND_PRICES[b.id] || 0;
-                  return (
+                {BRANDS.map((b) => (
                     <button
                       key={b.id}
                       onClick={() => {
@@ -344,10 +373,18 @@ export default function GameClient() {
                     >
                       <div className="text-sm font-extrabold">{b.meme}</div>
                       <div className="text-xs font-bold mt-0.5" style={{ color: b.color }}>{b.menu}</div>
-                      <div className="text-xs text-[--color-text-muted] mt-0.5">{price.toLocaleString()}원</div>
                     </button>
-                  );
-                })}
+                  ))}
+                  {/* Coming Soon */}
+                  {[1, 2].map((i) => (
+                    <div
+                      key={`coming-${i}`}
+                      className="p-3 rounded-xl text-center border-2 border-dashed border-[#e0e0e0] flex flex-col items-center justify-center"
+                    >
+                      <div className="text-lg opacity-30">🍗</div>
+                      <div className="text-[10px] font-bold text-[--color-text-muted]">Coming Soon</div>
+                    </div>
+                  ))}
               </div>
             </div>
           )}
