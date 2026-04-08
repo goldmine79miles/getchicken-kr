@@ -95,11 +95,8 @@ export default function GameClient() {
         smoothRef.current += speed * dt;
       }
 
-      // 실제 정밀도 4자리 + 코스메틱 마지막 4자리 (항상 스피닝)
-      const realPart = smoothRef.current.toFixed(4);
-      const micro = Math.floor(now * 7.77) % 10000;
-      const display = realPart + micro.toString().padStart(4, "0");
-      setCounterDisplay(display);
+      // 실제 보간값 8자리 (일정하게 증가)
+      setCounterDisplay(smoothRef.current.toFixed(8));
 
       animId = requestAnimationFrame(animate);
     };
