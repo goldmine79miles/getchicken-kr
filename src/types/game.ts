@@ -27,9 +27,9 @@ export interface GameState {
   parts: Record<PartId, PartState>;   // 부위별 상태
   totalCollected: number;             // 총 모은 양 (g)
   lastCollectTime: number;            // 마지막 적립 시간 (idle 계산)
-  // 적재량 시스템
-  currentCapacity: number;            // 현재 적재된 양 (0 ~ maxCapacity)
-  maxCapacity: number;                // 현재 최대 적재량
+  // 바구니 시스템 (튀김 바구니)
+  currentCapacity: number;            // 바구니에 담긴 양 (0 ~ maxCapacity)
+  maxCapacity: number;                // 바구니 최대 용량
   // 속도 시스템 (% 단위, 누적/감소)
   speedPercent: number;               // 현재 속도 (100 = 기본)
   lastSpeedUpdate: number;            // 마지막 속도 업데이트 시간
@@ -86,10 +86,11 @@ export const GAME_CONSTANTS = {
   MAX_OFFLINE_HOURS: 8,           // 오프라인 최대 8시간
   POINTS_PER_PART: 50,            // 부위 1개 = 50P
   POINTS_FULL_BONUS: 200,         // 한마리 완성 보너스 = 200P (총 500P)
-  // 적재량 시스템
-  INITIAL_MAX_CAPACITY: 5.0,      // 초기 최대 적재량 5g
-  CAPACITY_UPGRADE_PER_AD: 1.0,   // 포장 1회당 적재량 +1g
-  MAX_CAPACITY_LIMIT: 50.0,       // 적재량 상한
+  // 바구니 시스템 (금모으기 비례: 금 10원/적재 → 치킨 ~10원/적재 = 0.5g)
+  INITIAL_MAX_CAPACITY: 2.0,      // 초기 바구니 용량 2g (~43원 어치)
+  CAPACITY_UPGRADE_PER_AD: 0.5,   // 포장 1회당 바구니 +0.5g
+  MAX_CAPACITY_LIMIT: 20.0,       // 바구니 최대 상한 20g
+  MIN_PACKAGE_AMOUNT: 0.5,        // 최소 포장 가능량 0.5g (~10원 어치)
   // 속도 시스템 (% 단위)
   SPEED_BOOST_PER_AD: 100,        // 광고 1회당 +100%
   SPEED_DECAY_PER_HOUR: 50,       // 시간당 -50% 감소

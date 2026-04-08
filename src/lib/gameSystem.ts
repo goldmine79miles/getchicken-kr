@@ -263,9 +263,9 @@ export function applyTick(state: GameState): GameState {
   return newState;
 }
 
-/** 포장하기 (광고 시청) - 적재량을 activePart에 적립 + 적재량 리셋 */
+/** 포장하기 (광고 시청) - 바구니를 activePart에 적립 + 바구니 리셋 */
 export function packageCapacity(state: GameState): GameState {
-  if (state.currentCapacity <= 0) return state;
+  if (state.currentCapacity < GAME_CONSTANTS.MIN_PACKAGE_AMOUNT) return state;
 
   const newState = {
     ...state,

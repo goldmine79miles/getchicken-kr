@@ -119,11 +119,11 @@ export default function GameClient() {
           <div className="max-w-6xl mx-auto px-6 text-center">
             <div className="text-7xl md:text-8xl mb-6">🍗</div>
             <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4">
-              치킨을<br />튀겨라
+              치킨 튀겨서<br />치킨 받자
             </h1>
             <p className="text-lg md:text-xl text-[--color-text-secondary] max-w-lg mx-auto mb-10">
-              좋아하는 브랜드 치킨을 부위별로 모으고,<br className="hidden md:block" />
-              한마리 완성하면 진짜 치킨이 온다!
+              좋아하는 브랜드 치킨을 직접 튀겨 모으면,<br className="hidden md:block" />
+              진짜 치킨이 온다!
             </p>
             <a
               href="#brands"
@@ -296,7 +296,7 @@ export default function GameClient() {
             {/* 최대 적재량 + 튀기는 속도 */}
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#FFF3E0] text-[#E65100]">최대 적재량</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#FFF3E0] text-[#E65100]">튀김 바구니</span>
                 <span className="text-sm font-bold">{gameState.currentCapacity.toFixed(1)}g / {gameState.maxCapacity.toFixed(0)}g</span>
               </div>
               <div className="flex items-center gap-2">
@@ -329,7 +329,7 @@ export default function GameClient() {
             {/* 카피 */}
             <div className="text-center mt-3">
               {capacityFull ? (
-                <span className="text-sm font-bold text-red-500">적재량이 가득 찼어요! 포장해주세요</span>
+                <span className="text-sm font-bold text-red-500">바구니가 가득 찼어요! 포장해주세요</span>
               ) : (
                 <span className="text-sm font-bold text-[--color-text-muted]">🤚 치킨을 눌러서 튀겨 보아요</span>
               )}
@@ -362,7 +362,7 @@ export default function GameClient() {
             </button>
             <button
               onClick={handlePackage}
-              disabled={gameState.currentCapacity < 0.1}
+              disabled={gameState.currentCapacity < GAME_CONSTANTS.MIN_PACKAGE_AMOUNT}
               className="flex flex-col items-center gap-1.5 p-4 rounded-2xl border shadow-sm hover:shadow-md transition-all disabled:opacity-40 disabled:hover:shadow-sm relative"
               style={{
                 borderColor: capacityFull ? brand.color : "#e8e8e8",
@@ -376,7 +376,7 @@ export default function GameClient() {
               )}
               <span className="text-2xl">📦</span>
               <span className="text-sm font-bold">포장하기</span>
-              <span className="text-[10px] text-[--color-text-muted]">적재량 비우기</span>
+              <span className="text-[10px] text-[--color-text-muted]">바구니 비우기</span>
             </button>
           </div>
 
