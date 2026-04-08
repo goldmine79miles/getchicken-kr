@@ -5,11 +5,27 @@ export const metadata: Metadata = {
   title: "치킨준닭 | 치킨 모아서 치킨 받자!",
   description: "좋아하는 치킨 브랜드를 골라 부위별로 모으고, 한마리 완성하면 진짜 치킨을 받자! 12개 브랜드 치킨 수집 게임.",
   keywords: ["치킨준닭", "치킨 게임", "치킨 모으기", "치킨 받기", "idle game", "치킨 브랜드"],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  manifest: "/manifest.json",
   openGraph: {
     title: "치킨준닭 | 치킨 모아서 치킨 받자!",
     description: "좋아하는 치킨 브랜드를 골라 부위별로 모으고, 한마리 완성하면 진짜 치킨을 받자!",
     type: "website",
     locale: "ko_KR",
+  },
+  appleWebApp: {
+    capable: true,
+    title: "치킨준닭",
+    statusBarStyle: "default",
   },
 };
 

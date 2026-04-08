@@ -1,0 +1,21 @@
+{
+  "name": "치킨준닭",
+  "short_name": "치킨준닭",
+  "description": "치킨 모아서 치킨 받자!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFF5EE",
+  "theme_color": "#FF6B35",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
