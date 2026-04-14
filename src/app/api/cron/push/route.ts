@@ -15,9 +15,15 @@ async function ensureTables() {
 
 const CAMPAIGNS = [
   {
+    id: "fullCapacity",
+    condition: "current_capacity >= max_capacity",
+    templateSetCode: "REPLACE_AFTER_APPROVAL", // 승인 후 교체
+    context: {},
+  },
+  {
     id: "slowSpeed",
-    query: `SELECT user_key FROM user_state WHERE speed_percent <= 100 AND last_sync_at > NOW() - INTERVAL '24 hours'`,
-    templateSetCode: "slow_speed_alert",
+    condition: "speed_percent <= 100",
+    templateSetCode: "REPLACE_AFTER_APPROVAL", // 승인 후 교체
     context: {},
   },
 ];
@@ -45,7 +51,9 @@ export async function GET(req: NextRequest) {
     const stats = { eligible: 0, sent: 0, errors: 0 };
 
     // 조건 매칭 유저 조회
-    const users = await sql`SELECT user_key FROM user_state WHERE speed_percent <= 100 AND last_sync_at > NOW() - INTERVAL '24 hours'`;
+    const users = campaign.id === "fullCapacity"
+      ? await sql`SELECT user_key FROM user_state WHERE current_capacity >= max_capacity AND last_sync_at > NOW() - INTERVAL '24 hours'`
+      : await sql`SELECT user_key FROM user_state WHERE speed_percent <= 100 AND last_sync_at > NOW() - INTERVAL '24 hours'`;
 
     stats.eligible = users.length;
 
