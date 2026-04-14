@@ -10,14 +10,23 @@ import { checkRateLimit, getClientIP } from "@/lib/rateLimit";
 
 const DISCONNECT_SECRET = process.env.TOSS_DISCONNECT_SECRET || "";
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
+const ALLOWED_ORIGINS = [
+  "https://chikin.apps.tossmini.com",
+  "https://chikin.private-apps.tossmini.com",
+];
 
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+function getCorsHeaders(origin?: string | null) {
+  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  };
+}
+
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get("origin");
+  return new NextResponse(null, { status: 204, headers: getCorsHeaders(origin) });
 }
 
 function verifyBasicAuth(req: NextRequest): boolean {
@@ -36,17 +45,19 @@ function verifyBasicAuth(req: NextRequest): boolean {
 }
 
 export async function GET(req: NextRequest) {
+  const origin = req.headers.get("origin");
+  const cors = getCorsHeaders(origin);
   const ip = getClientIP(req);
   const rl = checkRateLimit(`toss-disconnect:${ip}`, { limit: 10, windowSec: 60 });
   if (!rl.allowed) {
     return NextResponse.json(
       { error: "Too many requests" },
-      { status: 429, headers: { ...CORS_HEADERS, "Retry-After": String(rl.resetIn) } }
+      { status: 429, headers: { ...cors, "Retry-After": String(rl.resetIn) } }
     );
   }
 
   if (!verifyBasicAuth(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: CORS_HEADERS });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: cors });
   }
 
   const url = new URL(req.url);
@@ -58,25 +69,27 @@ export async function GET(req: NextRequest) {
     } else {
       console.log("[toss-disconnect] Test ping received (no userKey)");
     }
-    return NextResponse.json({ resultType: "SUCCESS" }, { headers: CORS_HEADERS });
+    return NextResponse.json({ resultType: "SUCCESS" }, { headers: cors });
   } catch (error) {
     console.error("[toss-disconnect] error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500, headers: CORS_HEADERS });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500, headers: cors });
   }
 }
 
 export async function POST(req: NextRequest) {
+  const origin = req.headers.get("origin");
+  const cors = getCorsHeaders(origin);
   const ip = getClientIP(req);
   const rl = checkRateLimit(`toss-disconnect:${ip}`, { limit: 10, windowSec: 60 });
   if (!rl.allowed) {
     return NextResponse.json(
       { error: "Too many requests" },
-      { status: 429, headers: { ...CORS_HEADERS, "Retry-After": String(rl.resetIn) } }
+      { status: 429, headers: { ...cors, "Retry-After": String(rl.resetIn) } }
     );
   }
 
   if (!verifyBasicAuth(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: CORS_HEADERS });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: cors });
   }
 
   try {
@@ -91,9 +104,9 @@ export async function POST(req: NextRequest) {
     } else {
       console.log("[toss-disconnect] Test ping received (no userKey)");
     }
-    return NextResponse.json({ resultType: "SUCCESS" }, { headers: CORS_HEADERS });
+    return NextResponse.json({ resultType: "SUCCESS" }, { headers: cors });
   } catch (error) {
     console.error("[toss-disconnect] error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500, headers: CORS_HEADERS });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500, headers: cors });
   }
 }

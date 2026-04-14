@@ -15,16 +15,10 @@ async function ensureTables() {
 
 const CAMPAIGNS = [
   {
-    id: "fullCapacity",
-    query: `SELECT user_key FROM user_state WHERE current_capacity >= max_capacity AND last_sync_at > NOW() - INTERVAL '24 hours'`,
-    title: "튀김통이 가득 찼어요!",
-    body: "포장하면 더 튀길 수 있어요.",
-  },
-  {
     id: "slowSpeed",
     query: `SELECT user_key FROM user_state WHERE speed_percent <= 100 AND last_sync_at > NOW() - INTERVAL '24 hours'`,
-    title: "튀기는 속도가 줄었어요!",
-    body: "터보를 켜면 더 빨리 튀겨져요.",
+    templateSetCode: "slow_speed_alert",
+    context: {},
   },
 ];
 
@@ -32,7 +26,7 @@ export async function GET(req: NextRequest) {
   // Vercel Cron 인증
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -51,9 +45,7 @@ export async function GET(req: NextRequest) {
     const stats = { eligible: 0, sent: 0, errors: 0 };
 
     // 조건 매칭 유저 조회
-    const users = campaign.id === "fullCapacity"
-      ? await sql`SELECT user_key FROM user_state WHERE current_capacity >= max_capacity AND last_sync_at > NOW() - INTERVAL '24 hours'`
-      : await sql`SELECT user_key FROM user_state WHERE speed_percent <= 100 AND last_sync_at > NOW() - INTERVAL '24 hours'`;
+    const users = await sql`SELECT user_key FROM user_state WHERE speed_percent <= 100 AND last_sync_at > NOW() - INTERVAL '24 hours'`;
 
     stats.eligible = users.length;
 
@@ -70,20 +62,19 @@ export async function GET(req: NextRequest) {
       `;
       if (existing.length > 0) continue;
 
-      // Toss 스마트 발송 API 호출
+      // Toss 메시지 발송 API 호출
       try {
         const result = await mtlsRequest(
-          `${TOSS_API}/api-partner/v1/apps-in-toss/smart-message/send`,
+          `${TOSS_API}/api-partner/v1/apps-in-toss/messenger/send-message`,
           {
             method: "POST",
             body: JSON.stringify({
-              userKey,
-              smartMessageParam: {
-                title: campaign.title,
-                body: campaign.body,
-                messageType: "FUNCTIONAL",
-              },
+              templateSetCode: campaign.templateSetCode,
+              context: campaign.context,
             }),
+            extraHeaders: {
+              "X-Toss-User-Key": userKey,
+            },
             cert: certPem,
             key: keyPem,
           }
