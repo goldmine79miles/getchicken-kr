@@ -9,7 +9,7 @@ export async function initUserState() {
   const sql = getDb();
   await sql`
     CREATE TABLE IF NOT EXISTS user_state (
-      user_key VARCHAR(100) PRIMARY KEY,
+      user_key VARCHAR(255) PRIMARY KEY,
       brand_id VARCHAR(50),
       current_capacity REAL DEFAULT 0,
       max_capacity REAL DEFAULT 0.5,
@@ -19,6 +19,8 @@ export async function initUserState() {
       created_at TIMESTAMP DEFAULT NOW()
     )
   `;
+  // 기존 테이블 VARCHAR(100) → 255 마이그레이션
+  await sql`ALTER TABLE user_state ALTER COLUMN user_key TYPE VARCHAR(255)`.catch(() => {});
   await sql`CREATE INDEX IF NOT EXISTS idx_user_state_sync ON user_state(last_sync_at)`;
 }
 
@@ -28,11 +30,13 @@ export async function initPushLog() {
   await sql`
     CREATE TABLE IF NOT EXISTS push_log (
       id SERIAL PRIMARY KEY,
-      user_key VARCHAR(100) NOT NULL,
+      user_key VARCHAR(255) NOT NULL,
       campaign VARCHAR(50) NOT NULL,
       sent_at TIMESTAMP DEFAULT NOW(),
       toss_result TEXT
     )
   `;
+  // 기존 테이블 VARCHAR(100) → 255 마이그레이션
+  await sql`ALTER TABLE push_log ALTER COLUMN user_key TYPE VARCHAR(255)`.catch(() => {});
   await sql`CREATE INDEX IF NOT EXISTS idx_push_log_lookup ON push_log(user_key, campaign, sent_at)`;
 }

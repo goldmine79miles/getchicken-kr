@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   try {
     const { userKey, brandId, currentCapacity, maxCapacity, speedPercent, lastSpeedUpdate } = await req.json();
 
-    if (!userKey || typeof userKey !== "string" || userKey.length > 100) {
+    if (!userKey || typeof userKey !== "string" || userKey.length > 255) {
       return NextResponse.json({ error: "invalid userKey" }, { status: 400 });
     }
     if (brandId !== undefined && (typeof brandId !== "string" || brandId.length > 50)) {
