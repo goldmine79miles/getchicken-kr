@@ -22,7 +22,7 @@ export function middleware(req: NextRequest) {
       headers: {
         "Access-Control-Allow-Origin": isAllowed ? origin : "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, x-api-key",
         "Access-Control-Max-Age": "86400",
       },
     });
