@@ -50,10 +50,10 @@ export async function GET(req: NextRequest) {
   for (const campaign of CAMPAIGNS) {
     const stats = { eligible: 0, sent: 0, errors: 0 };
 
-    // 조건 매칭 유저 조회
+    // 조건 매칭 유저 조회 (알림 설정한 유저만)
     const users = campaign.id === "fullCapacity"
-      ? await sql`SELECT user_key FROM user_state WHERE current_capacity >= max_capacity AND last_sync_at > NOW() - INTERVAL '24 hours'`
-      : await sql`SELECT user_key FROM user_state WHERE speed_percent <= 100 AND last_sync_at > NOW() - INTERVAL '24 hours'`;
+      ? await sql`SELECT user_key FROM user_state WHERE current_capacity >= max_capacity AND notif_enabled = true AND last_sync_at > NOW() - INTERVAL '24 hours'`
+      : await sql`SELECT user_key FROM user_state WHERE speed_percent <= 100 AND notif_enabled = true AND last_sync_at > NOW() - INTERVAL '24 hours'`;
 
     stats.eligible = users.length;
 

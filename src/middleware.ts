@@ -31,7 +31,7 @@ export function middleware(req: NextRequest) {
   const res = NextResponse.next();
   res.headers.set("Access-Control-Allow-Origin", isAllowed ? origin : "*");
   res.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, x-api-key");
   return res;
 }
 
