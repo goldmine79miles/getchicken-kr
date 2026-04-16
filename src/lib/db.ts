@@ -21,8 +21,9 @@ export async function initUserState() {
   `;
   // 기존 테이블 VARCHAR(100) → 255 마이그레이션
   await sql`ALTER TABLE user_state ALTER COLUMN user_key TYPE VARCHAR(255)`.catch(() => {});
-  // notif_enabled 컬럼 추가 (기존 테이블 마이그레이션)
+  // notif 컬럼 추가 (기존 테이블 마이그레이션)
   await sql`ALTER TABLE user_state ADD COLUMN IF NOT EXISTS notif_enabled BOOLEAN DEFAULT false`.catch(() => {});
+  await sql`ALTER TABLE user_state ADD COLUMN IF NOT EXISTS notif_enabled_at BIGINT`.catch(() => {});
   await sql`CREATE INDEX IF NOT EXISTS idx_user_state_sync ON user_state(last_sync_at)`;
 }
 

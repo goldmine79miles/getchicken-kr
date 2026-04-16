@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { userKey, brandId, currentCapacity, maxCapacity, speedPercent, lastSpeedUpdate, notifEnabled } = await req.json();
+    const { userKey, brandId, currentCapacity, maxCapacity, speedPercent, lastSpeedUpdate, notifEnabled, notifEnabledAt } = await req.json();
 
     if (!userKey || typeof userKey !== "string" || userKey.length > 255) {
       return NextResponse.json({ error: "invalid userKey" }, { status: 400 });
@@ -60,8 +60,8 @@ export async function POST(req: NextRequest) {
     const sql = getDb();
 
     await sql`
-      INSERT INTO user_state (user_key, brand_id, current_capacity, max_capacity, speed_percent, last_speed_update, notif_enabled, last_sync_at)
-      VALUES (${userKey}, ${brandId}, ${currentCapacity}, ${maxCapacity}, ${speedPercent}, ${lastSpeedUpdate}, ${notifEnabled ?? false}, NOW())
+      INSERT INTO user_state (user_key, brand_id, current_capacity, max_capacity, speed_percent, last_speed_update, notif_enabled, notif_enabled_at, last_sync_at)
+      VALUES (${userKey}, ${brandId}, ${currentCapacity}, ${maxCapacity}, ${speedPercent}, ${lastSpeedUpdate}, ${notifEnabled ?? false}, ${notifEnabledAt ?? null}, NOW())
       ON CONFLICT (user_key) DO UPDATE SET
         brand_id = ${brandId},
         current_capacity = ${currentCapacity},
@@ -69,6 +69,7 @@ export async function POST(req: NextRequest) {
         speed_percent = ${speedPercent},
         last_speed_update = ${lastSpeedUpdate},
         notif_enabled = ${notifEnabled ?? false},
+        notif_enabled_at = ${notifEnabledAt ?? null},
         last_sync_at = NOW()
     `;
 
