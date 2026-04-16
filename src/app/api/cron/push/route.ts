@@ -15,14 +15,12 @@ async function ensureTables() {
 
 const CAMPAIGNS = [
   {
-    id: "fullCapacity",
-    condition: "current_capacity >= max_capacity",
+    id: "ovenFull",
     templateSetCode: "REPLACE_AFTER_APPROVAL", // 승인 후 교체
     context: {},
   },
   {
     id: "slowSpeed",
-    condition: "speed_percent <= 100",
     templateSetCode: "REPLACE_AFTER_APPROVAL", // 승인 후 교체
     context: {},
   },
@@ -51,9 +49,25 @@ export async function GET(req: NextRequest) {
     const stats = { eligible: 0, sent: 0, errors: 0 };
 
     // 조건 매칭 유저 조회 (알림 설정한 유저만)
+    // ovenFull: 튀김통 꽉 참 or 예측 (앱 닫아도 서버에서 계산). 0.000028 = BASE_SPEED, 0.85 = 보수적 계수. 안 비우면 1시간마다 반복
     // slowSpeed: 알림 설정 시점 기준 2시간 10분(7,800,000ms) 후 발송
-    const users = campaign.id === "fullCapacity"
-      ? await sql`SELECT user_key FROM user_state WHERE current_capacity >= max_capacity AND notif_enabled = true AND last_sync_at > NOW() - INTERVAL '24 hours'`
+    const users = campaign.id === "ovenFull"
+      ? await sql`
+          SELECT us.user_key FROM user_state us
+          WHERE (
+            us.current_capacity >= us.max_capacity
+            OR (
+              us.current_capacity + (
+                EXTRACT(EPOCH FROM (NOW() - us.last_sync_at)) * us.speed_percent / 100.0 * 0.000028 * 0.85
+              ) >= us.max_capacity
+            )
+          )
+          AND us.last_sync_at > NOW() - INTERVAL '24 hours'
+          AND NOT EXISTS (
+            SELECT 1 FROM push_log pl
+            WHERE pl.user_key = us.user_key AND pl.campaign = 'ovenFull' AND pl.sent_at > NOW() - INTERVAL '1 hour'
+          )
+        `
       : await sql`SELECT user_key FROM user_state WHERE notif_enabled_at IS NOT NULL AND (EXTRACT(EPOCH FROM NOW()) * 1000 - notif_enabled_at) > 7800000 AND last_sync_at > NOW() - INTERVAL '24 hours'`;
 
     stats.eligible = users.length;
