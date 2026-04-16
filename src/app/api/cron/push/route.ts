@@ -62,13 +62,13 @@ export async function GET(req: NextRequest) {
               ) >= us.max_capacity
             )
           )
-          AND us.last_sync_at > NOW() - INTERVAL '24 hours'
+          AND us.last_sync_at > NOW() - INTERVAL '72 hours'
           AND NOT EXISTS (
             SELECT 1 FROM push_log pl
             WHERE pl.user_key = us.user_key AND pl.campaign = 'fullCapacity' AND pl.sent_at > NOW() - INTERVAL '1 hour'
           )
         `
-      : await sql`SELECT user_key FROM user_state WHERE notif_enabled_at IS NOT NULL AND (EXTRACT(EPOCH FROM NOW()) * 1000 - notif_enabled_at) > 7800000 AND last_sync_at > NOW() - INTERVAL '24 hours'`;
+      : await sql`SELECT user_key FROM user_state WHERE notif_enabled_at IS NOT NULL AND (EXTRACT(EPOCH FROM NOW()) * 1000 - notif_enabled_at) > 7800000 AND last_sync_at > NOW() - INTERVAL '72 hours'`;
 
     stats.eligible = users.length;
 
