@@ -103,6 +103,12 @@ export async function GET(req: NextRequest) {
           }
         );
 
+        if (result?.resultType === "FAIL") {
+          console.error(`[cron/push] ${campaign.id} 발송 실패:`, result.error?.reason);
+          stats.errors++;
+          continue;
+        }
+
         await sql`
           INSERT INTO push_log (user_key, campaign, toss_result)
           VALUES (${userKey}, ${campaign.id}, ${JSON.stringify(result)})
