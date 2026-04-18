@@ -43,6 +43,19 @@ export async function POST(req: NextRequest) {
     if (!userKey || typeof userKey !== "string" || userKey.length > 255) {
       return NextResponse.json({ error: "invalid userKey" }, { status: 400 });
     }
+    // 가짜/테스트/authorizationCode userKey 차단
+    // - 토스 실제 userKey는 40~100자 범위
+    // - 128자 이상은 authorizationCode(옛 버그)
+    // - 20자 미만은 dev/test 값
+    if (
+      userKey.length < 20 ||
+      userKey.length > 100 ||
+      userKey.startsWith("dev_") ||
+      userKey.startsWith("test") ||
+      /[^A-Za-z0-9_-]/.test(userKey)
+    ) {
+      return NextResponse.json({ error: "invalid userKey format" }, { status: 400 });
+    }
     if (brandId !== undefined && (typeof brandId !== "string" || brandId.length > 50)) {
       return NextResponse.json({ error: "invalid brandId" }, { status: 400 });
     }
