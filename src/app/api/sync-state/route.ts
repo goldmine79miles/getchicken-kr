@@ -43,12 +43,10 @@ export async function POST(req: NextRequest) {
     if (!userKey || typeof userKey !== "string" || userKey.length > 255) {
       return NextResponse.json({ error: "invalid userKey" }, { status: 400 });
     }
-    // 가짜/테스트/authorizationCode userKey 차단
-    // - 토스 실제 userKey는 40~100자 범위
-    // - 128자 이상은 authorizationCode(옛 버그)
-    // - 20자 미만은 dev/test 값
+    // authorizationCode(128자 이상) 및 dev/test 값 차단
+    // - 실제 토스 userKey는 8~9자리 숫자 (예: 398621354)
+    // - 길이 하한 걸면 안 됨. 100자 초과만 차단 (authorizationCode)
     if (
-      userKey.length < 20 ||
       userKey.length > 100 ||
       userKey.startsWith("dev_") ||
       userKey.startsWith("test") ||
