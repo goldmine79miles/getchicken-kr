@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const TOSS_ORIGINS = [
+  "https://chicken.apps.tossmini.com",
+  "https://chicken.private-apps.tossmini.com",
   "https://chikin.apps.tossmini.com",
   "https://chikin.private-apps.tossmini.com",
   "https://apps-in-toss.toss.im",

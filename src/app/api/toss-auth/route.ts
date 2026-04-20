@@ -4,6 +4,8 @@ import { checkRateLimit, getClientIP } from "@/lib/rateLimit";
 import { mtlsRequest, TOSS_API } from "@/lib/toss-api";
 
 const ALLOWED_ORIGINS = [
+  "https://chicken.apps.tossmini.com",
+  "https://chicken.private-apps.tossmini.com",
   "https://chikin.apps.tossmini.com",
   "https://chikin.private-apps.tossmini.com",
 ];
