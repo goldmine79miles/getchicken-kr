@@ -16,12 +16,12 @@ async function ensureTables() {
 const CAMPAIGNS = [
   {
     id: "fullCapacity",
-    templateSetCode: "REPLACE_AFTER_APPROVAL", // 승인 후 교체
+    templateSetCode: "chicken-fullbox", // 통 가득참 안내
     context: {},
   },
   {
     id: "slowSpeed",
-    templateSetCode: "REPLACE_AFTER_APPROVAL", // 승인 후 교체
+    templateSetCode: "chicken-slowSpeed", // 속도저하 안내
     context: {},
   },
 ];
