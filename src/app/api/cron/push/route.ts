@@ -68,22 +68,27 @@ export async function GET(req: NextRequest) {
             WHERE pl.user_key = us.user_key AND pl.campaign = 'fullCapacity' AND pl.sent_at > NOW() - INTERVAL '1 hour'
           )
         `
-      : await sql`SELECT user_key FROM user_state WHERE notif_enabled_at IS NOT NULL AND (EXTRACT(EPOCH FROM NOW()) * 1000 - notif_enabled_at) > 7800000 AND last_sync_at > NOW() - INTERVAL '72 hours'`;
+      : await sql`
+          SELECT us.user_key FROM user_state us
+          WHERE us.notif_enabled_at IS NOT NULL
+            AND (EXTRACT(EPOCH FROM NOW()) * 1000 - us.notif_enabled_at) > 7800000
+            AND us.last_sync_at > NOW() - INTERVAL '72 hours'
+            AND NOT EXISTS (
+              SELECT 1 FROM push_log pl
+              WHERE pl.user_key = us.user_key
+                AND pl.campaign = 'slowSpeed'
+                AND pl.sent_at > TO_TIMESTAMP(us.notif_enabled_at / 1000.0)
+            )
+        `;
 
     stats.eligible = users.length;
 
     for (const user of users) {
       const userKey = user.user_key;
 
-      // 오늘 이미 보냈는지 체크
-      const existing = await sql`
-        SELECT 1 FROM push_log
-        WHERE user_key = ${userKey}
-          AND campaign = ${campaign.id}
-          AND sent_at::date = CURRENT_DATE
-        LIMIT 1
-      `;
-      if (existing.length > 0) continue;
+      // dedup은 위 쿼리의 NOT EXISTS가 담당:
+      // - fullCapacity: 최근 1시간 내 미발송 유저만 조회 (꽉 차있으면 1시간마다 반복)
+      // - slowSpeed: 현재 notif_enabled_at 이후 미발송 유저만 조회 (재부스트 시 재발송)
 
       // Toss 메시지 발송 API 호출
       try {
