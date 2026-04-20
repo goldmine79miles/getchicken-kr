@@ -84,6 +84,17 @@ export async function POST(req: NextRequest) {
         : NextResponse.json(err, { status: 500, headers: cors });
     }
 
+    // 진단 로그
+    console.log("[toss-auth] request:", {
+      origin: req.headers.get("origin"),
+      referer: req.headers.get("referer"),
+      ua: req.headers.get("user-agent"),
+      authCodePrefix: authorizationCode?.slice(0, 10),
+      authCodeLen: authorizationCode?.length,
+      referrerValue: referrer,
+      isFormPost,
+    });
+
     // Step 1: 인가코드 → AccessToken
     const tokenResult = await mtlsRequest(
       `${TOSS_API}/api-partner/v1/apps-in-toss/user/oauth2/generate-token`,
@@ -91,7 +102,7 @@ export async function POST(req: NextRequest) {
     );
 
     if (tokenResult.resultType !== "SUCCESS") {
-      console.error("[toss-auth] token error:", tokenResult.error);
+      console.error("[toss-auth] token error:", tokenResult.error, "referrer was:", referrer);
       const err = { error: tokenResult.error?.reason || "Token exchange failed" };
       return isFormPost
         ? postMessageResponse(err)
