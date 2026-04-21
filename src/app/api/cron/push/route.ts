@@ -54,12 +54,22 @@ export async function GET(req: NextRequest) {
     const users = campaign.id === "fullCapacity"
       ? await sql`
           SELECT us.user_key FROM user_state us
-          WHERE us.current_capacity >= us.max_capacity
-            AND us.last_sync_at > NOW() - INTERVAL '72 hours'
-            AND NOT EXISTS (
-              SELECT 1 FROM push_log pl
-              WHERE pl.user_key = us.user_key AND pl.campaign = 'fullCapacity' AND pl.sent_at > NOW() - INTERVAL '1 hour'
+          WHERE (
+            us.current_capacity >= us.max_capacity
+            OR (
+              -- 보수적 예측: sync 시점에 이미 반 이상 차있던 유저만
+              -- (완전 빈 상태 오탐 방지, 부스트 무시하고 기본속도로만 계산)
+              us.current_capacity >= us.max_capacity * 0.5
+              AND us.current_capacity + (
+                EXTRACT(EPOCH FROM (NOW() - us.last_sync_at)) * 0.000028 * 0.85
+              ) >= us.max_capacity
             )
+          )
+          AND us.last_sync_at > NOW() - INTERVAL '72 hours'
+          AND NOT EXISTS (
+            SELECT 1 FROM push_log pl
+            WHERE pl.user_key = us.user_key AND pl.campaign = 'fullCapacity' AND pl.sent_at > NOW() - INTERVAL '1 hour'
+          )
         `
       : await sql`
           SELECT us.user_key FROM user_state us
