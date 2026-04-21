@@ -57,8 +57,10 @@ export async function GET(req: NextRequest) {
           WHERE (
             us.current_capacity >= us.max_capacity
             OR (
+              -- 예측: 저장된 speed_percent 무시하고 기본속도(100%)로만 계산.
+              -- 부스트는 시간 지나면 decay되는데 서버는 모름 → 과대예측 방지
               us.current_capacity + (
-                EXTRACT(EPOCH FROM (NOW() - us.last_sync_at)) * us.speed_percent / 100.0 * 0.000028 * 0.85
+                EXTRACT(EPOCH FROM (NOW() - us.last_sync_at)) * 0.000028 * 0.85
               ) >= us.max_capacity
             )
           )
