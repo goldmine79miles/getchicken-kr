@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { checkRateLimit, getClientIP } from "@/lib/rateLimit";
+import { deleteUser } from "@/lib/kv";
 
 /**
  * 토스 연결 끊기 콜백
  * - 토스 개발자 콘솔에서 설정한 URL로 회원 탈퇴 시 호출됨
  * - Basic Auth 헤더로 인증
+ * - userKey 받으면 Redis 키 전부 삭제 (개인정보 규정 준수)
  */
 
 const DISCONNECT_SECRET = process.env.TOSS_DISCONNECT_SECRET || "";
@@ -44,6 +46,21 @@ function verifyBasicAuth(req: NextRequest): boolean {
   return crypto.timingSafeEqual(Buffer.from(decoded), Buffer.from(expected));
 }
 
+async function handleDisconnect(userKey: string | undefined): Promise<void> {
+  if (!userKey) {
+    console.log("[toss-disconnect] Test ping received (no userKey)");
+    return;
+  }
+  try {
+    await deleteUser(userKey);
+    console.log(`[toss-disconnect] User data deleted: ${userKey}`);
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "unknown";
+    console.error(`[toss-disconnect] delete failed for ${userKey}:`, msg);
+    throw e;
+  }
+}
+
 export async function GET(req: NextRequest) {
   const origin = req.headers.get("origin");
   const cors = getCorsHeaders(origin);
@@ -61,17 +78,14 @@ export async function GET(req: NextRequest) {
   }
 
   const url = new URL(req.url);
-  const userKey = url.searchParams.get("userKey");
+  const userKey = url.searchParams.get("userKey") || undefined;
 
   try {
-    if (userKey) {
-      console.log(`[toss-disconnect] User disconnected: ${userKey}`);
-    } else {
-      console.log("[toss-disconnect] Test ping received (no userKey)");
-    }
+    await handleDisconnect(userKey);
     return NextResponse.json({ resultType: "SUCCESS" }, { headers: cors });
-  } catch (error) {
-    console.error("[toss-disconnect] error:", error);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : "unknown";
+    console.error("[toss-disconnect] error:", msg);
     return NextResponse.json({ error: "Internal server error" }, { status: 500, headers: cors });
   }
 }
@@ -99,14 +113,11 @@ export async function POST(req: NextRequest) {
       userKey = body.userKey;
     } catch {}
 
-    if (userKey) {
-      console.log(`[toss-disconnect] User disconnected: ${userKey}`);
-    } else {
-      console.log("[toss-disconnect] Test ping received (no userKey)");
-    }
+    await handleDisconnect(userKey);
     return NextResponse.json({ resultType: "SUCCESS" }, { headers: cors });
-  } catch (error) {
-    console.error("[toss-disconnect] error:", error);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : "unknown";
+    console.error("[toss-disconnect] error:", msg);
     return NextResponse.json({ error: "Internal server error" }, { status: 500, headers: cors });
   }
 }

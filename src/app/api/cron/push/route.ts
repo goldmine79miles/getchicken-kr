@@ -1,33 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb, initUserState, initPushLog } from "@/lib/db";
+import { getActiveUserStates, getSentAt, markSent, wasSent } from "@/lib/kv";
 import { mtlsRequest, TOSS_API } from "@/lib/toss-api";
 
 export const maxDuration = 60;
 
-let tablesReady = false;
-async function ensureTables() {
-  if (!tablesReady) {
-    await initUserState();
-    await initPushLog();
-    tablesReady = true;
-  }
-}
-
 const CAMPAIGNS = [
-  {
-    id: "fullCapacity",
-    templateSetCode: "chicken-fullbox", // 통 가득참 안내
-    context: {},
-  },
-  {
-    id: "slowSpeed",
-    templateSetCode: "chicken-slowSpeed", // 속도저하 안내
-    context: {},
-  },
-];
+  { id: "fullCapacity", templateSetCode: "chicken-fullbox", context: {} },
+  { id: "slowSpeed", templateSetCode: "chicken-slowSpeed", context: {} },
+] as const;
+
+// chikin cron의 실제 SQL 계수에서 직접 복사 (실측 검증됨)
+const BASE_SPEED = 0.000028;
+const DAMPENING = 0.85;
+const HALF_FULL_THRESHOLD = 0.5; // 보수적 예측 가드 (cap >= max * 0.5 일 때만 예측)
+const SPEED_DOWN_GRACE_MS = 7800000;
+const ACTIVE_WINDOW_MS = 72 * 3600 * 1000;
+const CANDIDATE_LIMIT = 200;
+const SEND_LIMIT = 20;
+const FULL_CAPACITY_TTL_SEC = 3600;
 
 export async function GET(req: NextRequest) {
-  // Vercel Cron 인증
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
@@ -40,60 +32,57 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "mTLS not configured" }, { status: 500 });
   }
 
-  await ensureTables();
-  const sql = getDb();
+  const now = Date.now();
+  const sinceMs = now - ACTIVE_WINDOW_MS;
+  const candidates = await getActiveUserStates(sinceMs, now, CANDIDATE_LIMIT);
 
   const results: Record<string, { eligible: number; sent: number; errors: number }> = {};
 
   for (const campaign of CAMPAIGNS) {
     const stats = { eligible: 0, sent: 0, errors: 0 };
+    const eligible: string[] = [];
 
-    // 조건 매칭 유저 조회 (알림 설정한 유저만)
-    // fullCapacity: 튀김통 꽉 참 or 예측 (앱 닫아도 서버에서 계산). 0.000028 = BASE_SPEED, 0.85 = 보수적 계수. 안 비우면 1시간마다 반복
-    // slowSpeed: 알림 설정 시점 기준 2시간 10분(7,800,000ms) 후 발송
-    const users = campaign.id === "fullCapacity"
-      ? await sql`
-          SELECT us.user_key FROM user_state us
-          WHERE (
-            us.current_capacity >= us.max_capacity
-            OR (
-              -- 보수적 예측: sync 시점에 이미 반 이상 차있던 유저만
-              -- (완전 빈 상태 오탐 방지, 부스트 무시하고 기본속도로만 계산)
-              us.current_capacity >= us.max_capacity * 0.5
-              AND us.current_capacity + (
-                EXTRACT(EPOCH FROM (NOW() - us.last_sync_at)) * 0.000028 * 0.85
-              ) >= us.max_capacity
-            )
-          )
-          AND us.last_sync_at > NOW() - INTERVAL '72 hours'
-          AND NOT EXISTS (
-            SELECT 1 FROM push_log pl
-            WHERE pl.user_key = us.user_key AND pl.campaign = 'fullCapacity' AND pl.sent_at > NOW() - INTERVAL '1 hour'
-          )
-        `
-      : await sql`
-          SELECT us.user_key FROM user_state us
-          WHERE us.notif_enabled_at IS NOT NULL
-            AND (EXTRACT(EPOCH FROM NOW()) * 1000 - us.notif_enabled_at) > 7800000
-            AND us.last_sync_at > NOW() - INTERVAL '72 hours'
-            AND NOT EXISTS (
-              SELECT 1 FROM push_log pl
-              WHERE pl.user_key = us.user_key
-                AND pl.campaign = 'slowSpeed'
-                AND pl.sent_at > TO_TIMESTAMP(us.notif_enabled_at / 1000.0)
-            )
-        `;
+    for (const { userKey, state } of candidates) {
+      if (!state) continue;
+      if (eligible.length >= SEND_LIMIT) break;
 
-    stats.eligible = users.length;
+      if (campaign.id === "fullCapacity") {
+        if (await wasSent("fullCapacity", userKey)) continue;
 
-    for (const user of users) {
-      const userKey = user.user_key;
+        const cap = state.currentCapacity ?? 0;
+        const max = state.maxCapacity ?? 0;
+        if (max <= 0) continue;
 
-      // dedup은 위 쿼리의 NOT EXISTS가 담당:
-      // - fullCapacity: 최근 1시간 내 미발송 유저만 조회 (꽉 차있으면 1시간마다 반복)
-      // - slowSpeed: 현재 notif_enabled_at 이후 미발송 유저만 조회 (재부스트 시 재발송)
+        // chikin은 보수적 예측: 절반 이상 차있는 경우에만 elapsed time 기반 예측
+        // 부스트 무시, 기본속도 × 0.85로만 계산
+        if (cap >= max) {
+          eligible.push(userKey);
+          continue;
+        }
 
-      // Toss 메시지 발송 API 호출
+        if (cap >= max * HALF_FULL_THRESHOLD) {
+          const lastSyncMs = state.lastSyncAt ?? 0;
+          const elapsedSec = (now - lastSyncMs) / 1000;
+          const predicted = cap + elapsedSec * BASE_SPEED * DAMPENING;
+          if (predicted >= max) {
+            eligible.push(userKey);
+          }
+        }
+      } else if (campaign.id === "slowSpeed") {
+        const notifAt = state.notifEnabledAt;
+        if (!notifAt || notifAt <= 0) continue;
+        if (now - notifAt <= SPEED_DOWN_GRACE_MS) continue;
+
+        const sentAt = await getSentAt("slowSpeed", userKey);
+        if (sentAt !== null && sentAt > notifAt) continue;
+
+        eligible.push(userKey);
+      }
+    }
+
+    stats.eligible = eligible.length;
+
+    for (const userKey of eligible) {
       try {
         const result = await mtlsRequest(
           `${TOSS_API}/api-partner/v1/apps-in-toss/messenger/send-message`,
@@ -103,9 +92,7 @@ export async function GET(req: NextRequest) {
               templateSetCode: campaign.templateSetCode,
               context: campaign.context,
             }),
-            extraHeaders: {
-              "X-Toss-User-Key": userKey,
-            },
+            extraHeaders: { "X-Toss-User-Key": userKey },
             cert: certPem,
             key: keyPem,
           }
@@ -117,14 +104,16 @@ export async function GET(req: NextRequest) {
           continue;
         }
 
-        await sql`
-          INSERT INTO push_log (user_key, campaign, toss_result)
-          VALUES (${userKey}, ${campaign.id}, ${JSON.stringify(result)})
-        `;
+        if (campaign.id === "fullCapacity") {
+          await markSent("fullCapacity", userKey, FULL_CAPACITY_TTL_SEC);
+        } else {
+          await markSent("slowSpeed", userKey);
+        }
         stats.sent++;
-      } catch (e: any) {
+      } catch (e: unknown) {
         stats.errors++;
-        console.error(`[cron/push] ${campaign.id} ${userKey} error:`, e.message);
+        const msg = e instanceof Error ? e.message : "unknown";
+        console.error(`[cron/push] ${campaign.id} ${userKey} error:`, msg);
       }
     }
 
@@ -134,6 +123,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     ok: true,
     results,
+    candidatesScanned: candidates.length,
     checkedAt: new Date().toISOString(),
   });
 }

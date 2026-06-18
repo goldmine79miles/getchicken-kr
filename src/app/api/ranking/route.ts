@@ -1,37 +1,20 @@
 import { NextResponse } from "next/server";
-import { getDb, initUserState } from "@/lib/db";
-
-let initialized = false;
-
-async function ensureTable() {
-  if (!initialized) {
-    await initUserState();
-    initialized = true;
-  }
-}
+import { getActiveBrandCounts } from "@/lib/kv";
 
 /** 브랜드별 실시간 인기 랭킹 (최근 24시간 활성 유저 기준) */
 export async function GET() {
   try {
-    await ensureTable();
-    const sql = getDb();
+    const now = Date.now();
+    const sinceMs = now - 24 * 3600 * 1000;
+    const counts = await getActiveBrandCounts(sinceMs, now);
 
-    const rows = await sql`
-      SELECT brand_id, COUNT(*) as cnt
-      FROM user_state
-      WHERE last_sync_at > NOW() - INTERVAL '24 hours'
-        AND brand_id IS NOT NULL
-      GROUP BY brand_id
-      ORDER BY cnt DESC
-    `;
-
-    const total = rows.reduce((s, r) => s + Number(r.cnt), 0);
-
-    const ranking = rows.map((r, i) => ({
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    const total = sorted.reduce((s, [, c]) => s + c, 0);
+    const ranking = sorted.map(([brandId, count], i) => ({
       rank: i + 1,
-      brandId: r.brand_id,
-      count: Number(r.cnt),
-      percent: total > 0 ? Math.round((Number(r.cnt) / total) * 100) : 0,
+      brandId,
+      count,
+      percent: total > 0 ? Math.round((count / total) * 100) : 0,
     }));
 
     return NextResponse.json({
@@ -39,8 +22,9 @@ export async function GET() {
       total,
       updatedAt: new Date().toISOString(),
     });
-  } catch (e: any) {
-    console.error("ranking error:", e);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "unknown";
+    console.error("ranking error:", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

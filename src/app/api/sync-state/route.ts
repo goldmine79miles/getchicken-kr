@@ -1,20 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb, initUserState } from "@/lib/db";
+import { setUser, getActiveUserStates } from "@/lib/kv";
 import { checkRateLimit, getClientIP } from "@/lib/rateLimit";
-
-let initialized = false;
-
-async function ensureTable() {
-  if (!initialized) {
-    await initUserState();
-    initialized = true;
-  }
-}
 
 const SYNC_API_KEY = process.env.SYNC_API_KEY || "";
 
 function verifyApiKey(req: NextRequest): boolean {
-  if (!SYNC_API_KEY) return false; // 미설정이면 차단
+  if (!SYNC_API_KEY) return false;
   const key = req.headers.get("x-api-key");
   return key === SYNC_API_KEY;
 }
@@ -25,12 +16,10 @@ function isValidNumber(v: unknown, min: number, max: number): boolean {
 
 /** 토스 앱에서 게임 상태 동기화 (기능성 스마트 발송용) */
 export async function POST(req: NextRequest) {
-  // 인증
   if (!verifyApiKey(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // 레이트리밋: IP당 60req/분
   const ip = getClientIP(req);
   const rl = checkRateLimit(`sync-state:${ip}`, { limit: 60, windowSec: 60 });
   if (!rl.allowed) {
@@ -38,14 +27,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { userKey, brandId, currentCapacity, maxCapacity, speedPercent, lastSpeedUpdate, notifEnabled, notifEnabledAt } = await req.json();
+    const { userKey, brandId, currentCapacity, maxCapacity, speedPercent, lastSpeedUpdate, notifEnabledAt } = await req.json();
 
     if (!userKey || typeof userKey !== "string" || userKey.length > 255) {
       return NextResponse.json({ error: "invalid userKey" }, { status: 400 });
     }
     // authorizationCode(128자 이상) 및 dev/test 값 차단
-    // - 실제 토스 userKey는 8~9자리 숫자 (예: 398621354)
-    // - 길이 하한 걸면 안 됨. 100자 초과만 차단 (authorizationCode)
     if (
       userKey.length > 100 ||
       userKey.startsWith("dev_") ||
@@ -67,62 +54,57 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "invalid speedPercent" }, { status: 400 });
     }
 
-    await ensureTable();
-    const sql = getDb();
-
-    await sql`
-      INSERT INTO user_state (user_key, brand_id, current_capacity, max_capacity, speed_percent, last_speed_update, notif_enabled, notif_enabled_at, last_sync_at)
-      VALUES (${userKey}, ${brandId}, ${currentCapacity}, ${maxCapacity}, ${speedPercent}, ${lastSpeedUpdate}, ${notifEnabled ?? false}, ${notifEnabledAt ?? null}, NOW())
-      ON CONFLICT (user_key) DO UPDATE SET
-        brand_id = ${brandId},
-        current_capacity = ${currentCapacity},
-        max_capacity = ${maxCapacity},
-        speed_percent = ${speedPercent},
-        last_speed_update = ${lastSpeedUpdate},
-        notif_enabled = ${notifEnabled ?? false},
-        notif_enabled_at = ${notifEnabledAt ?? null},
-        last_sync_at = NOW()
-    `;
+    await setUser(userKey, {
+      brandId,
+      currentCapacity,
+      maxCapacity,
+      speedPercent,
+      lastSpeedUpdate,
+      notifEnabledAt,
+    });
 
     return NextResponse.json({ ok: true });
-  } catch (e: any) {
-    console.error("sync-state error:", e);
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "unknown";
+    console.error("sync-state error:", msg);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
 /** 스마트 발송 cron에서 조건 체크용 */
 export async function GET(req: NextRequest) {
-  // 인증
   if (!verifyApiKey(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    await ensureTable();
-    const sql = getDb();
+    const now = Date.now();
+    const sinceMs = now - 24 * 3600 * 1000;
+    const entries = await getActiveUserStates(sinceMs, now);
 
-    const fullCapacity = await sql`
-      SELECT user_key, brand_id, current_capacity, max_capacity
-      FROM user_state
-      WHERE current_capacity >= max_capacity
-        AND last_sync_at > NOW() - INTERVAL '24 hours'
-    `;
-
-    const slowSpeed = await sql`
-      SELECT user_key, brand_id, speed_percent
-      FROM user_state
-      WHERE speed_percent <= 100
-        AND last_sync_at > NOW() - INTERVAL '24 hours'
-    `;
+    const fullCapacity = [];
+    const slowSpeed = [];
+    for (const { userKey, state } of entries) {
+      if (!state) continue;
+      const cap = state.currentCapacity ?? 0;
+      const max = state.maxCapacity ?? 0;
+      const speed = state.speedPercent ?? 100;
+      if (max > 0 && cap >= max) {
+        fullCapacity.push({ user_key: userKey, brand_id: state.brandId, current_capacity: cap, max_capacity: max });
+      }
+      if (speed <= 100) {
+        slowSpeed.push({ user_key: userKey, brand_id: state.brandId, speed_percent: speed });
+      }
+    }
 
     return NextResponse.json({
       fullCapacity,
       slowSpeed,
       checkedAt: new Date().toISOString(),
     });
-  } catch (e: any) {
-    console.error("sync-state GET error:", e);
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "unknown";
+    console.error("sync-state GET error:", msg);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
